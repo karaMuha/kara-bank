@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"strconv"
 	"testing"
 	"time"
 
@@ -122,4 +123,32 @@ func (suite *AccountTestSuite) TestDeleteAccount() {
 	require.Error(suite.T(), err)
 	require.EqualError(suite.T(), err, pgx.ErrNoRows.Error())
 	require.Empty(suite.T(), account2)
+}
+
+func (suite *AccountTestSuite) TestListAccounts() {
+	for i := 0; i < 10; i++ {
+		name := "Max" + strconv.Itoa(i)
+		arg := CreateAccountParams{
+			Owner:    name,
+			Balance:  100,
+			Currency: "EUR",
+		}
+
+		account1, err := testQueries.CreateAccount(suite.ctx, arg)
+		require.NoError(suite.T(), err)
+		require.NotEmpty(suite.T(), account1)
+	}
+
+	arg := ListAccountsParams{
+		Limit:  5,
+		Offset: 5,
+	}
+
+	accounts, err := testQueries.ListAccounts(suite.ctx, arg)
+	require.NoError(suite.T(), err)
+	require.Len(suite.T(), accounts, 5)
+
+	for _, account := range accounts {
+		require.NotEmpty(suite.T(), account)
+	}
 }
