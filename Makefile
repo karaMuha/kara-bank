@@ -9,3 +9,7 @@ migratedown:
 
 appdown:
 	docker-compose down
+
+testall:
+	cd cmd; \
+	go test -v ./...
