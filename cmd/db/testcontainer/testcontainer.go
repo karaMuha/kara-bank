@@ -23,7 +23,7 @@ func CreatePostgresContainer(ctx context.Context) (*PostgresContainer, error) {
 	pgContainer, err := postgres.Run(ctx,
 		"postgres:16.3-alpine",
 		postgres.WithInitScripts(filepath.Join("..", "migration", "000001_init_schema.up.sql")),
-		postgres.WithDatabase("events_db"),
+		postgres.WithDatabase("kara_bank_db"),
 		postgres.WithUsername("postgres"),
 		postgres.WithPassword("postgres"),
 		testcontainers.WithWaitStrategy(
