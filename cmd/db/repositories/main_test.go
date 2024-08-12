@@ -2,7 +2,7 @@ package db
 
 import (
 	"context"
-	db "kara-bank/db/testcontainer"
+	testContainer "kara-bank/db/testcontainer"
 	"log"
 	"os"
 	"testing"
@@ -14,7 +14,7 @@ var testQueries *Queries
 var testDB *pgxpool.Pool
 
 func TestMain(m *testing.M) {
-	testContainer, err := db.CreatePostgresContainer(context.Background())
+	testContainer, err := testContainer.CreatePostgresContainer(context.Background())
 	testDB = testContainer.Pool
 
 	if err != nil {
