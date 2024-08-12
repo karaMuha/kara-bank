@@ -59,10 +59,7 @@ func (suite *AccountTestSuite) TestGetAccount() {
 		Currency: "EUR",
 	}
 
-	account1, err := testQueries.CreateAccount(suite.ctx, arg)
-
-	require.NoError(suite.T(), err)
-	require.NotEmpty(suite.T(), account1)
+	account1 := createTestAccount(suite.T(), arg)
 
 	account2, err := testQueries.GetAccount(suite.ctx, account1.ID)
 
@@ -83,10 +80,7 @@ func (suite *AccountTestSuite) TestUpdateAccount() {
 		Currency: "EUR",
 	}
 
-	account1, err := testQueries.CreateAccount(suite.ctx, arg)
-
-	require.NoError(suite.T(), err)
-	require.NotEmpty(suite.T(), account1)
+	account1 := createTestAccount(suite.T(), arg)
 
 	arg2 := UpdateAccountParams{
 		ID:      account1.ID,
@@ -112,11 +106,9 @@ func (suite *AccountTestSuite) TestDeleteAccount() {
 		Currency: "EUR",
 	}
 
-	account1, err := testQueries.CreateAccount(suite.ctx, arg)
-	require.NoError(suite.T(), err)
-	require.NotEmpty(suite.T(), account1)
+	account1 := createTestAccount(suite.T(), arg)
 
-	err = testQueries.DeleteAccount(suite.ctx, account1.ID)
+	err := testQueries.DeleteAccount(suite.ctx, account1.ID)
 	require.NoError(suite.T(), err)
 
 	account2, err := testQueries.GetAccount(suite.ctx, account1.ID)
@@ -134,9 +126,7 @@ func (suite *AccountTestSuite) TestListAccounts() {
 			Currency: "EUR",
 		}
 
-		account1, err := testQueries.CreateAccount(suite.ctx, arg)
-		require.NoError(suite.T(), err)
-		require.NotEmpty(suite.T(), account1)
+		_ = createTestAccount(suite.T(), arg)
 	}
 
 	arg := ListAccountsParams{
@@ -151,4 +141,20 @@ func (suite *AccountTestSuite) TestListAccounts() {
 	for _, account := range accounts {
 		require.NotEmpty(suite.T(), account)
 	}
+}
+
+func createTestAccount(t *testing.T, arg CreateAccountParams) Account {
+	account, err := testQueries.CreateAccount(context.Background(), arg)
+
+	require.NoError(t, err)
+	require.NotEmpty(t, account)
+
+	require.Equal(t, arg.Owner, account.Owner)
+	require.Equal(t, arg.Balance, account.Balance)
+	require.Equal(t, arg.Currency, account.Currency)
+
+	require.NotZero(t, account.ID)
+	require.NotZero(t, account.CreatedAt)
+
+	return account
 }
