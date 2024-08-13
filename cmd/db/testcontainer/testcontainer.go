@@ -11,15 +11,7 @@ import (
 	"github.com/testcontainers/testcontainers-go/wait"
 )
 
-type PostgresContainer struct {
-	*postgres.PostgresContainer
-	ConnectionString string
-	*pgxpool.Pool
-}
-
-var TestContainer *PostgresContainer
-
-func CreatePostgresContainer(ctx context.Context) (*PostgresContainer, error) {
+func CreatePostgresContainer(ctx context.Context) (*pgxpool.Pool, error) {
 	pgContainer, err := postgres.Run(ctx,
 		"postgres:16.3-alpine",
 		postgres.WithInitScripts(filepath.Join("..", "migration", "000001_init_schema.up.sql")),
@@ -53,9 +45,5 @@ func CreatePostgresContainer(ctx context.Context) (*PostgresContainer, error) {
 		return nil, err
 	}
 
-	return &PostgresContainer{
-		PostgresContainer: pgContainer,
-		ConnectionString:  connStr,
-		Pool:              dbHandler,
-	}, nil
+	return dbHandler, nil
 }
