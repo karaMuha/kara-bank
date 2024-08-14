@@ -58,6 +58,20 @@ func (a *AccountServiceImpl) GetAccount(ctx context.Context, id int64) (*db.Acco
 	return account, nil
 }
 
-func (a AccountServiceImpl) ListAccounts(ctx context.Context, args *dto.ListAccountsDto) ([]*db.Account, *dto.ResponseError) {
-	return nil, nil
+func (a AccountServiceImpl) ListAccounts(ctx context.Context, arg *dto.ListAccountsDto) ([]*db.Account, *dto.ResponseError) {
+	params := &db.ListAccountsParams{
+		Limit:  arg.Limit,
+		Offset: arg.Offset,
+	}
+
+	accountList, err := a.Querier.ListAccounts(ctx, params)
+
+	if err != nil {
+		return nil, &dto.ResponseError{
+			Message: err.Error(),
+			Status:  http.StatusInternalServerError,
+		}
+	}
+
+	return accountList, nil
 }
