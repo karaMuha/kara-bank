@@ -2,9 +2,12 @@ package services
 
 import (
 	"context"
+	"errors"
 	db "kara-bank/db/repositories"
 	"kara-bank/dto"
 	"net/http"
+
+	"github.com/jackc/pgx/v5"
 )
 
 type AccountServiceImpl struct {
@@ -36,8 +39,23 @@ func (a *AccountServiceImpl) CreateAccount(ctx context.Context, args *dto.Create
 	return createdAccount, nil
 }
 
-func (a *AccountServiceImpl) GetAccount(ctx context.Context, id string) (*db.Account, *dto.ResponseError) {
-	return nil, nil
+func (a *AccountServiceImpl) GetAccount(ctx context.Context, id int64) (*db.Account, *dto.ResponseError) {
+	account, err := a.Querier.GetAccount(ctx, id)
+
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, &dto.ResponseError{
+				Message: err.Error(),
+				Status:  http.StatusNotFound,
+			}
+		}
+		return nil, &dto.ResponseError{
+			Message: err.Error(),
+			Status:  http.StatusInternalServerError,
+		}
+	}
+
+	return account, nil
 }
 
 func (a AccountServiceImpl) ListAccounts(ctx context.Context, args *dto.ListAccountsDto) ([]*db.Account, *dto.ResponseError) {
