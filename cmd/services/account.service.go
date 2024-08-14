@@ -20,14 +20,14 @@ func NewAccountService(querier db.Querier) AccountServiceInterface {
 	}
 }
 
-func (a *AccountServiceImpl) CreateAccount(ctx context.Context, arg *dto.CreateAccountDto) (*db.Account, *dto.ResponseError) {
-	params := &db.CreateAccountParams{
-		Owner:    arg.Owner,
-		Currency: arg.Currency,
+func (a *AccountServiceImpl) CreateAccount(ctx context.Context, args *dto.CreateAccountDto) (*db.Account, *dto.ResponseError) {
+	createAccountParams := &db.CreateAccountParams{
+		Owner:    args.Owner,
+		Currency: args.Currency,
 		Balance:  0,
 	}
 
-	createdAccount, err := a.Querier.CreateAccount(ctx, params)
+	createdAccount, err := a.Querier.CreateAccount(ctx, createAccountParams)
 
 	if err != nil {
 		return nil, &dto.ResponseError{
@@ -58,20 +58,6 @@ func (a *AccountServiceImpl) GetAccount(ctx context.Context, id int64) (*db.Acco
 	return account, nil
 }
 
-func (a AccountServiceImpl) ListAccounts(ctx context.Context, arg *dto.ListAccountsDto) ([]*db.Account, *dto.ResponseError) {
-	params := &db.ListAccountsParams{
-		Limit:  arg.Limit,
-		Offset: arg.Offset,
-	}
-
-	accountList, err := a.Querier.ListAccounts(ctx, params)
-
-	if err != nil {
-		return nil, &dto.ResponseError{
-			Message: err.Error(),
-			Status:  http.StatusInternalServerError,
-		}
-	}
-
-	return accountList, nil
+func (a AccountServiceImpl) ListAccounts(ctx context.Context, args *dto.ListAccountsDto) ([]*db.Account, *dto.ResponseError) {
+	return nil, nil
 }
