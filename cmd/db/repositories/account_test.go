@@ -39,7 +39,7 @@ func (suite *AccountTestSuite) TestCreateAccount() {
 		Currency: "EUR",
 	}
 
-	account, err := testQueries.CreateAccount(suite.ctx, arg)
+	account, err := testQueries.CreateAccount(suite.ctx, &arg)
 
 	require.NoError(suite.T(), err)
 	require.NotEmpty(suite.T(), account)
@@ -87,7 +87,7 @@ func (suite *AccountTestSuite) TestUpdateAccount() {
 		Balance: 200,
 	}
 
-	account2, err := testQueries.UpdateAccount(suite.ctx, arg2)
+	account2, err := testQueries.UpdateAccount(suite.ctx, &arg2)
 
 	require.NoError(suite.T(), err)
 	require.NotEmpty(suite.T(), account2)
@@ -134,7 +134,7 @@ func (suite *AccountTestSuite) TestListAccounts() {
 		Offset: 5,
 	}
 
-	accounts, err := testQueries.ListAccounts(suite.ctx, arg)
+	accounts, err := testQueries.ListAccounts(suite.ctx, &arg)
 	require.NoError(suite.T(), err)
 	require.Len(suite.T(), accounts, 5)
 
@@ -143,8 +143,8 @@ func (suite *AccountTestSuite) TestListAccounts() {
 	}
 }
 
-func createTestAccount(t *testing.T, arg CreateAccountParams) Account {
-	account, err := testQueries.CreateAccount(context.Background(), arg)
+func createTestAccount(t *testing.T, arg CreateAccountParams) *Account {
+	account, err := testQueries.CreateAccount(context.Background(), &arg)
 
 	require.NoError(t, err)
 	require.NotEmpty(t, account)
