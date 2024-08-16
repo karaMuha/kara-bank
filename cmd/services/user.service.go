@@ -2,10 +2,12 @@ package services
 
 import (
 	"context"
+	"errors"
 	db "kara-bank/db/repositories"
 	"kara-bank/dto"
 	"net/http"
 
+	"github.com/jackc/pgx/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -60,5 +62,32 @@ func (u *UserServiceImpl) GetUser(ctx context.Context, email string) (*db.User, 
 }
 
 func (u *UserServiceImpl) LoginUser(ctx context.Context, arg *dto.LoginUserDto) (string, *dto.ResponseError) {
-	return "", nil
+	user, err := u.store.GetUser(ctx, arg.Email)
+
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return "", &dto.ResponseError{
+				Message: err.Error(),
+				Status:  http.StatusNotFound,
+			}
+		}
+
+		return "", &dto.ResponseError{
+			Message: err.Error(),
+			Status:  http.StatusInternalServerError,
+		}
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.HashedPassword), []byte(arg.Password))
+
+	if err != nil {
+		return "", &dto.ResponseError{
+			Message: err.Error(),
+			Status:  http.StatusUnauthorized,
+		}
+	}
+
+	// TODO: generate and return jwt
+
+	return "token", nil
 }
