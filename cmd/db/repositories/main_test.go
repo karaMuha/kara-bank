@@ -2,7 +2,8 @@ package db
 
 import (
 	"context"
-	testContainer "kara-bank/db/testcontainer"
+	"kara-bank/testcontainer"
+
 	"log"
 	"os"
 	"testing"
@@ -12,7 +13,7 @@ var testQueries *Queries
 var testStore Store
 
 func TestMain(m *testing.M) {
-	testDB, err := testContainer.CreatePostgresContainer(context.Background())
+	testDB, err := testcontainer.CreatePostgresContainer(context.Background())
 
 	if err != nil {
 		log.Fatalf("Could not start test container: %v", err)

@@ -1,4 +1,4 @@
-package db
+package testcontainer
 
 import (
 	"context"
@@ -33,13 +33,13 @@ func CreatePostgresContainer(ctx context.Context) (*pgxpool.Pool, error) {
 		return nil, err
 	}
 
-	dbHandler, err := pgxpool.New(context.Background(), connStr)
+	dbHandler, err := pgxpool.New(ctx, connStr)
 
 	if err != nil {
 		return nil, err
 	}
 
-	err = dbHandler.Ping(context.Background())
+	err = dbHandler.Ping(ctx)
 
 	if err != nil {
 		return nil, err
