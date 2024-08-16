@@ -9,7 +9,31 @@ import (
 	"context"
 )
 
-const createUser = `-- name: CreateUser :one
+const getUser = `-- name: GetUser :one
+SELECT
+  email, hashed_password, first_name, last_name, created_at
+FROM
+  users
+WHERE
+  email = $1
+LIMIT
+1
+`
+
+func (q *Queries) GetUser(ctx context.Context, email string) (*User, error) {
+	row := q.db.QueryRow(ctx, getUser, email)
+	var i User
+	err := row.Scan(
+		&i.Email,
+		&i.HashedPassword,
+		&i.FirstName,
+		&i.LastName,
+		&i.CreatedAt,
+	)
+	return &i, err
+}
+
+const registerUser = `-- name: RegisterUser :one
 INSERT INTO
     users (
     email,
@@ -24,44 +48,20 @@ RETURNING
   email, hashed_password, first_name, last_name, created_at
 `
 
-type CreateUserParams struct {
+type RegisterUserParams struct {
 	Email          string `json:"email"`
 	HashedPassword string `json:"hashed_password"`
 	FirstName      string `json:"first_name"`
 	LastName       string `json:"last_name"`
 }
 
-func (q *Queries) CreateUser(ctx context.Context, arg *CreateUserParams) (*User, error) {
-	row := q.db.QueryRow(ctx, createUser,
+func (q *Queries) RegisterUser(ctx context.Context, arg *RegisterUserParams) (*User, error) {
+	row := q.db.QueryRow(ctx, registerUser,
 		arg.Email,
 		arg.HashedPassword,
 		arg.FirstName,
 		arg.LastName,
 	)
-	var i User
-	err := row.Scan(
-		&i.Email,
-		&i.HashedPassword,
-		&i.FirstName,
-		&i.LastName,
-		&i.CreatedAt,
-	)
-	return &i, err
-}
-
-const getUser = `-- name: GetUser :one
-SELECT
-  email, hashed_password, first_name, last_name, created_at
-FROM
-  users
-WHERE
-  email = $1
-LIMIT
-1
-`
-
-func (q *Queries) GetUser(ctx context.Context, email string) (*User, error) {
-	row := q.db.QueryRow(ctx, getUser, email)
 	var i User
 	err := row.Scan(
 		&i.Email,
