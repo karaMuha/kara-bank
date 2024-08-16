@@ -25,7 +25,7 @@ type CreateTransferParams struct {
 	Amount        int64 `json:"amount"`
 }
 
-func (q *Queries) CreateTransfer(ctx context.Context, arg CreateTransferParams) (Transfer, error) {
+func (q *Queries) CreateTransfer(ctx context.Context, arg *CreateTransferParams) (*Transfer, error) {
 	row := q.db.QueryRow(ctx, createTransfer, arg.FromAccountID, arg.ToAccountID, arg.Amount)
 	var i Transfer
 	err := row.Scan(
@@ -35,7 +35,7 @@ func (q *Queries) CreateTransfer(ctx context.Context, arg CreateTransferParams) 
 		&i.Amount,
 		&i.CreatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const getTransfer = `-- name: GetTransfer :one
@@ -44,7 +44,7 @@ WHERE id = $1
 LIMIT 1
 `
 
-func (q *Queries) GetTransfer(ctx context.Context, id int64) (Transfer, error) {
+func (q *Queries) GetTransfer(ctx context.Context, id int64) (*Transfer, error) {
 	row := q.db.QueryRow(ctx, getTransfer, id)
 	var i Transfer
 	err := row.Scan(
@@ -54,7 +54,7 @@ func (q *Queries) GetTransfer(ctx context.Context, id int64) (Transfer, error) {
 		&i.Amount,
 		&i.CreatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const listTransfers = `-- name: ListTransfers :many
@@ -75,7 +75,7 @@ type ListTransfersParams struct {
 	Offset        int32 `json:"offset"`
 }
 
-func (q *Queries) ListTransfers(ctx context.Context, arg ListTransfersParams) ([]Transfer, error) {
+func (q *Queries) ListTransfers(ctx context.Context, arg *ListTransfersParams) ([]*Transfer, error) {
 	rows, err := q.db.Query(ctx, listTransfers,
 		arg.FromAccountID,
 		arg.ToAccountID,
@@ -86,7 +86,7 @@ func (q *Queries) ListTransfers(ctx context.Context, arg ListTransfersParams) ([
 		return nil, err
 	}
 	defer rows.Close()
-	items := []Transfer{}
+	var items []*Transfer
 	for rows.Next() {
 		var i Transfer
 		if err := rows.Scan(
@@ -98,7 +98,7 @@ func (q *Queries) ListTransfers(ctx context.Context, arg ListTransfersParams) ([
 		); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, &i)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
