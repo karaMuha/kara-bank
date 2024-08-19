@@ -18,10 +18,10 @@ type UserServiceImpl struct {
 	tokenMaker util.TokenMaker
 }
 
-func NewUserService(store db.Store, symmetricKey string) UserServiceInterface {
+func NewUserService(store db.Store, tokenMaker util.TokenMaker) UserServiceInterface {
 	return &UserServiceImpl{
 		store:      store,
-		tokenMaker: util.NewPasetoMaker(symmetricKey),
+		tokenMaker: tokenMaker,
 	}
 }
 
