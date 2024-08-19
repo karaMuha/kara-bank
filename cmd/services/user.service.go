@@ -5,19 +5,23 @@ import (
 	"errors"
 	db "kara-bank/db/repositories"
 	"kara-bank/dto"
+	"kara-bank/util"
 	"net/http"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type UserServiceImpl struct {
-	store db.Store
+	store      db.Store
+	tokenMaker util.TokenMaker
 }
 
-func NewUserService(store db.Store) UserServiceInterface {
+func NewUserService(store db.Store, symmetricKey string) UserServiceInterface {
 	return &UserServiceImpl{
-		store: store,
+		store:      store,
+		tokenMaker: util.NewPasetoMaker(symmetricKey),
 	}
 }
 
@@ -87,7 +91,14 @@ func (u *UserServiceImpl) LoginUser(ctx context.Context, arg *dto.LoginUserDto) 
 		}
 	}
 
-	// TODO: generate and return jwt
+	token, err := u.tokenMaker.CreateToken(user.Email, 30*time.Minute)
 
-	return "token", nil
+	if err != nil {
+		return "", &dto.ResponseError{
+			Message: err.Error(),
+			Status:  http.StatusInternalServerError,
+		}
+	}
+
+	return token, nil
 }
