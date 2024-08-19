@@ -31,6 +31,7 @@ func (store *SQLStore) TransferTx(ctx context.Context, arg TransferTxParams) (Tr
 			ToAccountID:   arg.ToAccountID,
 			Amount:        arg.Amount,
 		})
+
 		if err != nil {
 			return err
 		}
@@ -39,6 +40,7 @@ func (store *SQLStore) TransferTx(ctx context.Context, arg TransferTxParams) (Tr
 			AccountID: arg.FromAccountID,
 			Amount:    -arg.Amount,
 		})
+
 		if err != nil {
 			return err
 		}
@@ -47,17 +49,24 @@ func (store *SQLStore) TransferTx(ctx context.Context, arg TransferTxParams) (Tr
 			AccountID: arg.ToAccountID,
 			Amount:    arg.Amount,
 		})
+
 		if err != nil {
 			return err
 		}
 
 		if arg.FromAccountID < arg.ToAccountID {
 			result.FromAccount, result.ToAccount, err = addMoney(ctx, q, arg.FromAccountID, -arg.Amount, arg.ToAccountID, arg.Amount)
+			if err != nil {
+				return err
+			}
 		} else {
 			result.ToAccount, result.FromAccount, err = addMoney(ctx, q, arg.ToAccountID, arg.Amount, arg.FromAccountID, -arg.Amount)
+			if err != nil {
+				return err
+			}
 		}
 
-		return err
+		return nil
 	})
 
 	return result, err
@@ -75,13 +84,19 @@ func addMoney(
 		ID:     accountID1,
 		Amount: amount1,
 	})
+
 	if err != nil {
-		return
+		return nil, nil, err
 	}
 
 	account2, err = q.AddAccountBalance(ctx, &AddAccountBalanceParams{
 		ID:     accountID2,
 		Amount: amount2,
 	})
-	return
+
+	if err != nil {
+		return account1, nil, err
+	}
+
+	return account1, account2, nil
 }

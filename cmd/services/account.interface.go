@@ -13,3 +13,5 @@ type AccountServiceInterface interface {
 
 	ListAccounts(ctx context.Context, args *dto.ListAccountsDto) ([]*db.Account, *dto.ResponseError)
 }
+
+var _ AccountServiceInterface = (*AccountServiceImpl)(nil)
