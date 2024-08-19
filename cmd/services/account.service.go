@@ -30,6 +30,12 @@ func (a *AccountServiceImpl) CreateAccount(ctx context.Context, args *dto.Create
 	createdAccount, err := a.store.CreateAccount(ctx, createAccountParams)
 
 	if err != nil {
+		if db.ErrorCode(err) == db.UniqueViolation {
+			return nil, &dto.ResponseError{
+				Message: err.Error(),
+				Status:  http.StatusConflict,
+			}
+		}
 		return nil, &dto.ResponseError{
 			Message: err.Error(),
 			Status:  http.StatusInternalServerError,
