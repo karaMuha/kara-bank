@@ -11,7 +11,7 @@ services:
       replicas: 1
     environment:
       SERVER_PORT: ":8080"
-      DB_CONNECTION: "postgresql://postgres:postgres@localhost:5433/kara_bank_db?sslmode=disable"
+      DB_CONNECTION: "postgres://postgres:postgres@host.docker.internal:5433/kara_bank_db?sslmode=disable&pool_max_conns=10"
 
   postgres:
     container_name: postgres

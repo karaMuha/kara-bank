@@ -10,19 +10,19 @@ import (
 )
 
 func initDatabase(ctx context.Context, dbConnection string) (*pgxpool.Pool, error) {
-	db, err := pgxpool.New(ctx, dbConnection)
+	pool, err := pgxpool.New(ctx, dbConnection)
 	if err != nil {
 		log.Printf("Error while connecting to database %v", err)
 		return nil, err
 	}
 
-	err = db.Ping(ctx)
+	err = pool.Ping(context.Background())
 	if err != nil {
 		log.Printf("Error while validating database connection: %v", err)
 		return nil, err
 	}
 
-	return db, nil
+	return pool, nil
 }
 
 func ConnectToDb(ctx context.Context) *pgxpool.Pool {
