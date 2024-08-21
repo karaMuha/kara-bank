@@ -1,6 +1,6 @@
 package dto
 
 type LoginUserDto struct {
-	Email    string
-	Password string
+	Email    string `validate:"required,email"`
+	Password string `validate:"required"`
 }
