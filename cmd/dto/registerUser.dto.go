@@ -1,8 +1,8 @@
 package dto
 
 type RegisterUserDto struct {
-	Email     string
-	Password  string
-	FirstName string
-	LastName  string
+	Email     string `validate:"required,email"`
+	Password  string `validate:"required,min=8"`
+	FirstName string `validate:"required,alpha"`
+	LastName  string `validate:"required,alpha"`
 }

@@ -1,4 +1,4 @@
-package util
+package utils
 
 import (
 	"strings"
@@ -59,18 +59,25 @@ func (p *PasetoMaker) VerifyToken(token string) (*TokenPayload, error) {
 
 func getPayloadFromToken(token *paseto.Token) (*TokenPayload, error) {
 	id, err := token.GetString("id")
+
 	if err != nil {
 		return nil, ErrInvalidToken
 	}
+
 	email, err := token.GetString("email")
+
 	if err != nil {
 		return nil, ErrInvalidToken
 	}
+
 	issuedAt, err := token.GetIssuedAt()
+
 	if err != nil {
 		return nil, ErrInvalidToken
 	}
+
 	expiredAt, err := token.GetExpiration()
+
 	if err != nil {
 		return nil, ErrInvalidToken
 	}
