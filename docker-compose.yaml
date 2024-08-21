@@ -1,4 +1,18 @@
 services:
+  kara-bank:
+    build:
+      context: ./cmd
+      dockerfile: ./Dockerfile
+    restart: always
+    ports:
+      - "8080:8080"
+    deploy:
+      mode: replicated
+      replicas: 1
+    environment:
+      SERVER_PORT: ":8080"
+      DB_CONNECTION: "postgresql://postgres:postgres@localhost:5433/kara_bank_db?sslmode=disable"
+
   postgres:
     container_name: postgres
     image: 'postgres:16.3-alpine'

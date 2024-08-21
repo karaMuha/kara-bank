@@ -6,21 +6,32 @@ import (
 	"kara-bank/services"
 	"net/http"
 	"time"
+
+	"github.com/go-playground/validator/v10"
 )
 
 type UserController struct {
 	userService services.UserServiceInterface
+	validator   *validator.Validate
 }
 
-func NewUserController(userService services.UserServiceInterface) *UserController {
+func NewUserController(userService services.UserServiceInterface, validator *validator.Validate) *UserController {
 	return &UserController{
 		userService: userService,
+		validator:   validator,
 	}
 }
 
 func (u *UserController) HandleRegisterUser(w http.ResponseWriter, r *http.Request) {
 	var requestBody dto.RegisterUserDto
 	err := json.NewDecoder(r.Body).Decode(&requestBody)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	err = u.validator.Struct(requestBody)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -49,6 +60,13 @@ func (u *UserController) HandleRegisterUser(w http.ResponseWriter, r *http.Reque
 func (u *UserController) HandleLoginUser(w http.ResponseWriter, r *http.Request) {
 	var requestBody dto.LoginUserDto
 	err := json.NewDecoder(r.Body).Decode(&requestBody)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	err = u.validator.Struct(requestBody)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
