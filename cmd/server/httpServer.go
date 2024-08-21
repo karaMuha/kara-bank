@@ -6,13 +6,12 @@ import (
 	"kara-bank/services"
 	"kara-bank/util"
 	"net/http"
-	"os"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func InitHttpServer(connPool *pgxpool.Pool, tokenMaker util.TokenMaker) *http.Server {
+func InitHttpServer(port string, connPool *pgxpool.Pool, tokenMaker util.TokenMaker) *http.Server {
 	// init validator
 	validator := validator.New(validator.WithRequiredStructEnabled())
 	// init repository layer
@@ -41,7 +40,7 @@ func InitHttpServer(connPool *pgxpool.Pool, tokenMaker util.TokenMaker) *http.Se
 	router.HandleFunc("POST /transfers", transferController.HandleCreateTransfer)
 
 	return &http.Server{
-		Addr:    os.Getenv("SERVER_PORT"),
+		Addr:    port,
 		Handler: router,
 	}
 }
