@@ -6,21 +6,32 @@ import (
 	"kara-bank/services"
 	"net/http"
 	"strconv"
+
+	"github.com/go-playground/validator/v10"
 )
 
 type AccountController struct {
 	accountService services.AccountServiceInterface
+	validator      *validator.Validate
 }
 
-func NewAccountController(accountService services.AccountServiceInterface) *AccountController {
+func NewAccountController(accountService services.AccountServiceInterface, validator *validator.Validate) *AccountController {
 	return &AccountController{
 		accountService: accountService,
+		validator:      validator,
 	}
 }
 
 func (a *AccountController) HandleCreateAccount(w http.ResponseWriter, r *http.Request) {
 	var requestBody dto.CreateAccountDto
 	err := json.NewDecoder(r.Body).Decode(&requestBody)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	err = a.validator.Struct(requestBody)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -81,6 +92,13 @@ func (a *AccountController) HandleGetAccount(w http.ResponseWriter, r *http.Requ
 func (a *AccountController) HandleListAccounts(w http.ResponseWriter, r *http.Request) {
 	var requestBody dto.ListAccountsDto
 	err := json.NewDecoder(r.Body).Decode(&requestBody)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	err = a.validator.Struct(requestBody)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)

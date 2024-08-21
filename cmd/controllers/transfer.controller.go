@@ -5,21 +5,32 @@ import (
 	"kara-bank/dto"
 	"kara-bank/services"
 	"net/http"
+
+	"github.com/go-playground/validator/v10"
 )
 
 type TransferController struct {
 	transferService services.TransferServiceInterface
+	validator       *validator.Validate
 }
 
-func NewTransferController(transferService services.TransferServiceInterface) *TransferController {
+func NewTransferController(transferService services.TransferServiceInterface, validator *validator.Validate) *TransferController {
 	return &TransferController{
 		transferService: transferService,
+		validator:       validator,
 	}
 }
 
 func (t *TransferController) HandleCreateTransfer(w http.ResponseWriter, r *http.Request) {
 	var requestBody dto.CreateTransferDto
 	err := json.NewDecoder(r.Body).Decode(&requestBody)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	err = t.validator.Struct(requestBody)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)

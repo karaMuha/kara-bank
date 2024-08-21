@@ -5,7 +5,7 @@ import (
 	"errors"
 	db "kara-bank/db/repositories"
 	"kara-bank/dto"
-	"kara-bank/util"
+	"kara-bank/utils"
 	"net/http"
 	"time"
 
@@ -15,10 +15,10 @@ import (
 
 type UserServiceImpl struct {
 	store      db.Store
-	tokenMaker util.TokenMaker
+	tokenMaker utils.TokenMaker
 }
 
-func NewUserService(store db.Store, tokenMaker util.TokenMaker) UserServiceInterface {
+func NewUserService(store db.Store, tokenMaker utils.TokenMaker) UserServiceInterface {
 	return &UserServiceImpl{
 		store:      store,
 		tokenMaker: tokenMaker,

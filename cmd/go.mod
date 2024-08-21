@@ -7,6 +7,12 @@ require github.com/testcontainers/testcontainers-go v0.32.0
 require (
 	aidanwoods.dev/go-paseto v1.5.2 // indirect
 	aidanwoods.dev/go-result v0.1.0 // indirect
+	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
+	github.com/go-playground/locales v0.14.1 // indirect
+	github.com/go-playground/universal-translator v0.18.1 // indirect
+	github.com/go-playground/validator/v10 v10.22.0 // indirect
+	github.com/leodido/go-urn v1.4.0 // indirect
+	golang.org/x/net v0.23.0 // indirect
 )
 
 require (
