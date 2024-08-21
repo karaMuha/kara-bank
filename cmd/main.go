@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"kara-bank/server"
-	"kara-bank/util"
+	"kara-bank/utils"
 	"log"
 	"os"
 )
@@ -13,7 +13,7 @@ func main() {
 	port := os.Getenv("SERVER_PORT")
 
 	log.Println("Initializing token maker")
-	pasetoMaker := util.NewPasetoMaker("") // TODO: get key for token generation
+	pasetoMaker := utils.NewPasetoMaker("") // TODO: get key for token generation
 
 	log.Println("Connecting to database")
 	connPool := server.ConnectToDb(context.Background())
