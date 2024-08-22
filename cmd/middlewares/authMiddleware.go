@@ -9,7 +9,7 @@ import (
 
 type contextUserEmail string
 
-const contextUserEmailKey contextUserEmail = "email"
+const ContextUserEmailKey contextUserEmail = "userEmail"
 
 func AuthMiddleware(tokenMaker utils.TokenMaker, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -34,7 +34,7 @@ func AuthMiddleware(tokenMaker utils.TokenMaker, next http.Handler) http.Handler
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), contextUserEmailKey, verifiedToken.Email)
+		ctx := context.WithValue(r.Context(), ContextUserEmailKey, verifiedToken.Email)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

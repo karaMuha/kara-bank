@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"kara-bank/dto"
+	"kara-bank/middlewares"
 	"kara-bank/services"
 	"net/http"
 	"strconv"
@@ -31,16 +32,14 @@ func (a *AccountController) HandleCreateAccount(w http.ResponseWriter, r *http.R
 		return
 	}
 
+	email := r.Context().Value(middlewares.ContextUserEmailKey).(string)
+	requestBody.Owner = email
 	err = a.validator.Struct(requestBody)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-
-	email := r.Context().Value("tokenEmail").(string)
-
-	requestBody.Owner = email
 
 	account, respErr := a.accountService.CreateAccount(r.Context(), &requestBody)
 
