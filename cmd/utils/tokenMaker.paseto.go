@@ -13,7 +13,7 @@ type PasetoMaker struct {
 	implicit    []byte
 }
 
-func NewPasetoMaker(symmetricKey string) TokenMaker {
+func NewPasetoMaker(symmetricKey string) *PasetoMaker {
 	return &PasetoMaker{
 		symmeticKey: paseto.NewV4SymmetricKey(),
 		implicit:    []byte(symmetricKey),
@@ -89,3 +89,5 @@ func getPayloadFromToken(token *paseto.Token) (*TokenPayload, error) {
 		ExpiredAt: expiredAt,
 	}, nil
 }
+
+var _ TokenMaker = (*PasetoMaker)(nil)

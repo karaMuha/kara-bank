@@ -18,7 +18,7 @@ type UserServiceImpl struct {
 	tokenMaker utils.TokenMaker
 }
 
-func NewUserService(store db.Store, tokenMaker utils.TokenMaker) UserServiceInterface {
+func NewUserService(store db.Store, tokenMaker utils.TokenMaker) *UserServiceImpl {
 	return &UserServiceImpl{
 		store:      store,
 		tokenMaker: tokenMaker,
@@ -102,3 +102,5 @@ func (u *UserServiceImpl) LoginUser(ctx context.Context, arg *dto.LoginUserDto) 
 
 	return token, nil
 }
+
+var _ UserServiceInterface = (*UserServiceImpl)(nil)
