@@ -21,7 +21,7 @@ func NewTransferService(store db.Store) TransferServiceInterface {
 }
 
 func (t *TransferServiceImpl) CreateTransfer(ctx context.Context, arg *dto.CreateTransferDto) (*db.TransferTxResult, *dto.ResponseError) {
-	respErr := t.validAccounts(ctx, arg.FromAccountId, arg.ToAccountId)
+	respErr := t.validAccounts(ctx, arg.FromUser, arg.FromAccountId, arg.ToAccountId)
 
 	if respErr != nil {
 		return nil, respErr
@@ -45,8 +45,8 @@ func (t *TransferServiceImpl) CreateTransfer(ctx context.Context, arg *dto.Creat
 	return &transfer, nil
 }
 
-func (t *TransferServiceImpl) validAccounts(ctx context.Context, fromAccountId int64, toAccountId int64) *dto.ResponseError {
-	_, err := t.store.GetAccount(ctx, fromAccountId)
+func (t *TransferServiceImpl) validAccounts(ctx context.Context, fromUser string, fromAccountId int64, toAccountId int64) *dto.ResponseError {
+	fromAccount, err := t.store.GetAccount(ctx, fromAccountId)
 
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -59,6 +59,13 @@ func (t *TransferServiceImpl) validAccounts(ctx context.Context, fromAccountId i
 		return &dto.ResponseError{
 			Message: err.Error(),
 			Status:  http.StatusInternalServerError,
+		}
+	}
+
+	if fromAccount.Owner != fromUser {
+		return &dto.ResponseError{
+			Message: "You cannot send money from accoutns other than yours",
+			Status:  http.StatusUnauthorized,
 		}
 	}
 

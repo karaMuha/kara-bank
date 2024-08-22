@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"kara-bank/dto"
+	"kara-bank/middlewares"
 	"kara-bank/services"
 	"net/http"
 
@@ -30,6 +31,8 @@ func (t *TransferController) HandleCreateTransfer(w http.ResponseWriter, r *http
 		return
 	}
 
+	email := r.Context().Value(middlewares.ContextUserEmailKey).(string)
+	requestBody.FromUser = email
 	err = t.validator.Struct(requestBody)
 
 	if err != nil {
