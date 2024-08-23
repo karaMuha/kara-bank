@@ -13,19 +13,19 @@ type PasetoMaker struct {
 	implicit    []byte
 }
 
-func NewPasetoMaker(symmetricKey string) TokenMaker {
+func NewPasetoMaker(symmetricKey string) *PasetoMaker {
 	return &PasetoMaker{
 		symmeticKey: paseto.NewV4SymmetricKey(),
 		implicit:    []byte(symmetricKey),
 	}
 }
 
-func (p *PasetoMaker) CreateToken(email string, duration time.Duration) (string, error) {
+func (p *PasetoMaker) CreateToken(email string, duration time.Duration) (string, *TokenPayload, error) {
 	token := paseto.NewToken()
 	tokenId, err := uuid.NewRandom()
 
 	if err != nil {
-		return "", err
+		return "", nil, err
 	}
 
 	token.Set("id", tokenId.String())
@@ -33,7 +33,13 @@ func (p *PasetoMaker) CreateToken(email string, duration time.Duration) (string,
 	token.SetIssuedAt(time.Now())
 	token.SetExpiration(time.Now().Add(duration))
 
-	return token.V4Encrypt(p.symmeticKey, p.implicit), nil
+	payload, err := getPayloadFromToken(&token)
+
+	if err != nil {
+		return "", nil, nil
+	}
+
+	return token.V4Encrypt(p.symmeticKey, p.implicit), payload, nil
 }
 
 func (p *PasetoMaker) VerifyToken(token string) (*TokenPayload, error) {
@@ -89,3 +95,5 @@ func getPayloadFromToken(token *paseto.Token) (*TokenPayload, error) {
 		ExpiredAt: expiredAt,
 	}, nil
 }
+
+var _ TokenMaker = (*PasetoMaker)(nil)

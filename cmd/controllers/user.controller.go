@@ -66,6 +66,9 @@ func (u *UserController) HandleLoginUser(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	requestBody.UserAgent = r.UserAgent()
+	requestBody.ClientIp = r.RemoteAddr
+
 	err = u.validator.Struct(requestBody)
 
 	if err != nil {

@@ -15,6 +15,7 @@ import (
 func InitHttpServer(port string, connPool *pgxpool.Pool, tokenMaker utils.TokenMaker) *http.Server {
 	// init validator
 	validator := validator.New(validator.WithRequiredStructEnabled())
+
 	// init repository layer
 	store := db.NewStore(connPool)
 

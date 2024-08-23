@@ -14,7 +14,7 @@ type TransferServiceImpl struct {
 	store db.Store
 }
 
-func NewTransferService(store db.Store) TransferServiceInterface {
+func NewTransferService(store db.Store) *TransferServiceImpl {
 	return &TransferServiceImpl{
 		store: store,
 	}
@@ -87,3 +87,5 @@ func (t *TransferServiceImpl) validAccounts(ctx context.Context, fromUser string
 
 	return nil
 }
+
+var _ TransferServiceInterface = (*TransferServiceImpl)(nil)
