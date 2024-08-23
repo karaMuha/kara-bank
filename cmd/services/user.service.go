@@ -91,7 +91,7 @@ func (u *UserServiceImpl) LoginUser(ctx context.Context, arg *dto.LoginUserDto) 
 		}
 	}
 
-	token, err := u.tokenMaker.CreateToken(user.Email, 30*time.Minute)
+	accessToken, _, err := u.tokenMaker.CreateToken(user.Email, 30*time.Minute)
 
 	if err != nil {
 		return "", &dto.ResponseError{
@@ -100,7 +100,35 @@ func (u *UserServiceImpl) LoginUser(ctx context.Context, arg *dto.LoginUserDto) 
 		}
 	}
 
-	return token, nil
+	refreshToken, refreshTokenPayload, err := u.tokenMaker.CreateToken(user.Email, 168*time.Hour) // valid for a week
+
+	if err != nil {
+		return "", &dto.ResponseError{
+			Message: err.Error(),
+			Status:  http.StatusInternalServerError,
+		}
+	}
+
+	sessionParams := &db.CreateSessionParams{
+		ID:           refreshTokenPayload.ID,
+		Email:        refreshTokenPayload.Email,
+		RefreshToken: refreshToken,
+		UserAgent:    arg.UserAgent,
+		ClientIp:     arg.ClientIp,
+		IsBlocked:    false,
+		ExpiresAt:    refreshTokenPayload.ExpiredAt,
+	}
+
+	_, err = u.store.CreateSession(ctx, sessionParams)
+
+	if err != nil {
+		return "", &dto.ResponseError{
+			Message: err.Error(),
+			Status:  http.StatusInternalServerError,
+		}
+	}
+
+	return accessToken, nil
 }
 
 var _ UserServiceInterface = (*UserServiceImpl)(nil)
