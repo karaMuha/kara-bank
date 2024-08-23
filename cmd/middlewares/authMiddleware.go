@@ -20,7 +20,7 @@ func AuthMiddleware(tokenMaker utils.TokenMaker, next http.Handler) http.Handler
 			return
 		}
 
-		authToken, err := r.Cookie("paseto")
+		authToken, err := r.Cookie("access_token")
 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusUnauthorized)

@@ -84,7 +84,7 @@ func (u *UserController) HandleLoginUser(w http.ResponseWriter, r *http.Request)
 	}
 
 	http.SetCookie(w, &http.Cookie{
-		Name:     "paseto",
+		Name:     "access_token",
 		Value:    token,
 		Secure:   true,
 		HttpOnly: true,
