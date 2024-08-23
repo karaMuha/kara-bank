@@ -14,7 +14,7 @@ type AccountServiceImpl struct {
 	store db.Store
 }
 
-func NewAccountService(store db.Store) AccountServiceInterface {
+func NewAccountService(store db.Store) *AccountServiceImpl {
 	return &AccountServiceImpl{
 		store: store,
 	}
@@ -81,3 +81,5 @@ func (a AccountServiceImpl) ListAccounts(ctx context.Context, arg *dto.ListAccou
 
 	return accountList, nil
 }
+
+var _ AccountServiceInterface = (*AccountServiceImpl)(nil)
