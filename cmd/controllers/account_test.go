@@ -56,7 +56,7 @@ func (suite *AccountControllerTestSuite) SetupSuite() {
 }
 
 func (suite *AccountControllerTestSuite) AfterTest(suiteName string, testName string) {
-	// clear users table after every test to avoid dependencies and side effects between tests
+	// clear tables after every test to avoid dependencies and side effects between tests
 	_, err := testStore.ClearAccountsTable()
 	require.NoError(suite.T(), err)
 
@@ -87,12 +87,12 @@ func (suite *AccountControllerTestSuite) TestCreateAccountNotLoggedIn() {
 }
 
 func (suite *AccountControllerTestSuite) TestCreateAccountSuccess() {
-	accessTokenCookie := suite.registerUserAndLogin(&dto.RegisterUserDto{
+	accessTokenCookie := registerUserAndLogin(&dto.RegisterUserDto{
 		Email:     "Max@Mustermann.de",
 		Password:  "Test1234",
 		FirstName: "Max",
 		LastName:  "Mustermann",
-	})
+	}, suite.router, suite.T())
 
 	// create account with logged in user
 	createAccountParam := &dto.CreateAccountDto{
@@ -115,12 +115,12 @@ func (suite *AccountControllerTestSuite) TestCreateAccountSuccess() {
 }
 
 func (suite *AccountControllerTestSuite) TestGetOneAccountNotFound() {
-	accessTokenCookie := suite.registerUserAndLogin(&dto.RegisterUserDto{
+	accessTokenCookie := registerUserAndLogin(&dto.RegisterUserDto{
 		Email:     "Max@Mustermann.de",
 		Password:  "Test1234",
 		FirstName: "Max",
 		LastName:  "Mustermann",
-	})
+	}, suite.router, suite.T())
 
 	request := httptest.NewRequest("GET", "/accounts/123", nil)
 	request.AddCookie(accessTokenCookie)
@@ -138,20 +138,17 @@ func (suite *AccountControllerTestSuite) TestGetOneAccountSuccess() {
 		FirstName: "Max",
 		LastName:  "Mustermann",
 	}
-	accessTokenCookie := suite.registerUserAndLogin(&registerUserParam)
+	accessTokenCookie := registerUserAndLogin(&registerUserParam, suite.router, suite.T())
 
 	// create account with logged in user
 	createAccountParam := &dto.CreateAccountDto{
 		Currency: "EUR",
 	}
+	var body bytes.Buffer
+	err := json.NewEncoder(&body).Encode(createAccountParam)
+	require.NoError(suite.T(), err)
 
-	createAccountParamBytes, err := json.Marshal(createAccountParam)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	requestBody := bytes.NewReader(createAccountParamBytes)
-	request := httptest.NewRequest("POST", "/accounts", requestBody)
+	request := httptest.NewRequest("POST", "/accounts", &body)
 	request.AddCookie(accessTokenCookie)
 	recorder := httptest.NewRecorder()
 
@@ -168,54 +165,25 @@ func (suite *AccountControllerTestSuite) TestGetOneAccountSuccess() {
 	require.Equal(suite.T(), registerUserParam.Email, createdAccount.Owner)
 }
 
-func (suite *AccountControllerTestSuite) registerUserAndLogin(arg *dto.RegisterUserDto) *http.Cookie {
-	// register user
-	userBytes, err := json.Marshal(arg)
-	if err != nil {
-		log.Fatal(err)
+// helper function for test suits that need accounts
+func createAccount(accessToken *http.Cookie, currency string, router http.Handler, t *testing.T) *db.Account {
+	createAccountParam := &dto.CreateAccountDto{
+		Currency: currency,
 	}
+	var body bytes.Buffer
+	err := json.NewEncoder(&body).Encode(createAccountParam)
+	require.NoError(t, err)
 
-	body := bytes.NewReader(userBytes)
-	request := httptest.NewRequest("POST", "/users/register", body)
+	request := httptest.NewRequest("POST", "/accounts", &body)
+	request.AddCookie(accessToken)
 	recorder := httptest.NewRecorder()
 
-	suite.router.ServeHTTP(recorder, request)
+	router.ServeHTTP(recorder, request)
+	require.Equal(t, http.StatusCreated, recorder.Result().StatusCode)
 
-	require.Equal(suite.T(), 201, recorder.Result().StatusCode)
+	var createdAccount db.Account
+	err = json.NewDecoder(recorder.Result().Body).Decode(&createdAccount)
+	require.NoError(t, err)
 
-	// login with registered user
-	loginRequestParam := &dto.LoginUserDto{
-		Email:    arg.Email,
-		Password: arg.Password,
-	}
-
-	loginRequestParamBytes, err := json.Marshal(loginRequestParam)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	requestBody := bytes.NewReader(loginRequestParamBytes)
-	request = httptest.NewRequest("POST", "/users/login", requestBody)
-	request.RemoteAddr = "test"
-	request.Header.Set("User-Agent", "test")
-	recorder = httptest.NewRecorder()
-
-	suite.router.ServeHTTP(recorder, request)
-
-	require.Equal(suite.T(), 200, recorder.Result().StatusCode)
-
-	accessTokenCookie := getCookie(recorder.Result().Cookies())
-	require.NotNil(suite.T(), accessTokenCookie)
-
-	return accessTokenCookie
-}
-
-func getCookie(cookies []*http.Cookie) *http.Cookie {
-	for _, cookie := range cookies {
-		if cookie.Name == "access_token" {
-			return cookie
-		}
-	}
-
-	return nil
+	return &createdAccount
 }

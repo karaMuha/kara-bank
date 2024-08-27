@@ -41,7 +41,7 @@ func (suite *UserControllerTestSuite) SetupSuite() {
 }
 
 func (suite *UserControllerTestSuite) AfterTest(suiteName string, testName string) {
-	// clear users table after every test to avoid dependencies and side effects between tests
+	// clear tables after every test to avoid dependencies and side effects between tests
 	_, err := testStore.ClearSessionsTable()
 	require.NoError(suite.T(), err)
 
@@ -267,4 +267,57 @@ func (suite *UserControllerTestSuite) TestLoginSuccess() {
 	suite.router.ServeHTTP(recorder, request)
 
 	require.Equal(suite.T(), 200, recorder.Result().StatusCode)
+}
+
+// helper function for test suits that need users
+func registerUserAndLogin(arg *dto.RegisterUserDto, router http.Handler, t *testing.T) *http.Cookie {
+	// register user
+	registerUserBytes, err := json.Marshal(arg)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	body := bytes.NewReader(registerUserBytes)
+	request := httptest.NewRequest("POST", "/users/register", body)
+	recorder := httptest.NewRecorder()
+
+	router.ServeHTTP(recorder, request)
+
+	require.Equal(t, 201, recorder.Result().StatusCode)
+
+	// login with registered user
+	loginRequestParam := &dto.LoginUserDto{
+		Email:    arg.Email,
+		Password: arg.Password,
+	}
+
+	loginRequestParamBytes, err := json.Marshal(loginRequestParam)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	requestBody := bytes.NewReader(loginRequestParamBytes)
+	request = httptest.NewRequest("POST", "/users/login", requestBody)
+	request.RemoteAddr = "test"
+	request.Header.Set("User-Agent", "test")
+	recorder = httptest.NewRecorder()
+
+	router.ServeHTTP(recorder, request)
+
+	require.Equal(t, 200, recorder.Result().StatusCode)
+
+	accessTokenCookie := getCookie(recorder.Result().Cookies())
+	require.NotNil(t, accessTokenCookie)
+
+	return accessTokenCookie
+}
+
+func getCookie(cookies []*http.Cookie) *http.Cookie {
+	for _, cookie := range cookies {
+		if cookie.Name == "access_token" {
+			return cookie
+		}
+	}
+
+	return nil
 }

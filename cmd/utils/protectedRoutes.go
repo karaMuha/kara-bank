@@ -7,7 +7,7 @@ func SetProtectedRoutes() {
 	protectedRoutes["POST users"] = false
 	protectedRoutes["POST accounts"] = true
 	protectedRoutes["GET accounts"] = true
-	protectedRoutes["POST transfer"] = true
+	protectedRoutes["POST transfers"] = true
 }
 
 func IsProtectedRoute(endpoint string) bool {

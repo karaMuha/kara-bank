@@ -18,6 +18,7 @@ type Store interface {
 	ClearTransfersTable() (pgconn.CommandTag, error)
 	ClearEntriesTable() (pgconn.CommandTag, error)
 	ClearSessionsTable() (pgconn.CommandTag, error)
+	SetAccountBalance(ctx context.Context, accountId int64, balance int64) (*Account, error)
 }
 
 // SQLStore provides all functions to execute SQL queries and transactions
@@ -77,7 +78,7 @@ func (store *SQLStore) ClearTransfersTable() (pgconn.CommandTag, error) {
 func (store *SQLStore) ClearEntriesTable() (pgconn.CommandTag, error) {
 	query := `
 		DELETE FROM
-			entires`
+			entries`
 	return store.connPool.Exec(context.Background(), query)
 }
 
@@ -86,4 +87,12 @@ func (store *SQLStore) ClearSessionsTable() (pgconn.CommandTag, error) {
 		DELETE FROM
 			sessions`
 	return store.connPool.Exec(context.Background(), query)
+}
+
+func (store *SQLStore) SetAccountBalance(ctx context.Context, accountId int64, balance int64) (*Account, error) {
+	updateAccountParam := &UpdateAccountParams{
+		ID:      accountId,
+		Balance: balance,
+	}
+	return store.UpdateAccount(ctx, updateAccountParam)
 }
