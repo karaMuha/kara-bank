@@ -24,10 +24,7 @@ func TestAccountSuite(t *testing.T) {
 
 func (suite *AccountTestSuite) AfterTest(suiteName string, testName string) {
 	// clear accounts table after every test to avoid dependencies and side effects between tests
-	query := `
-		DELETE FROM
-			accounts`
-	_, err := testQueries.db.Exec(suite.ctx, query)
+	_, err := testStore.ClearAccountsTable()
 
 	require.NoError(suite.T(), err)
 }
@@ -39,7 +36,7 @@ func (suite *AccountTestSuite) TestCreateAccount() {
 		Currency: "EUR",
 	}
 
-	account, err := testQueries.CreateAccount(suite.ctx, &arg)
+	account, err := testStore.CreateAccount(suite.ctx, &arg)
 
 	require.NoError(suite.T(), err)
 	require.NotEmpty(suite.T(), account)
@@ -61,7 +58,7 @@ func (suite *AccountTestSuite) TestGetAccount() {
 
 	account1 := createTestAccount(suite.T(), arg)
 
-	account2, err := testQueries.GetAccount(suite.ctx, account1.ID)
+	account2, err := testStore.GetAccount(suite.ctx, account1.ID)
 
 	require.NoError(suite.T(), err)
 	require.NotEmpty(suite.T(), account2)
@@ -87,7 +84,7 @@ func (suite *AccountTestSuite) TestUpdateAccount() {
 		Balance: 200,
 	}
 
-	account2, err := testQueries.UpdateAccount(suite.ctx, &arg2)
+	account2, err := testStore.UpdateAccount(suite.ctx, &arg2)
 
 	require.NoError(suite.T(), err)
 	require.NotEmpty(suite.T(), account2)
@@ -108,10 +105,10 @@ func (suite *AccountTestSuite) TestDeleteAccount() {
 
 	account1 := createTestAccount(suite.T(), arg)
 
-	err := testQueries.DeleteAccount(suite.ctx, account1.ID)
+	err := testStore.DeleteAccount(suite.ctx, account1.ID)
 	require.NoError(suite.T(), err)
 
-	account2, err := testQueries.GetAccount(suite.ctx, account1.ID)
+	account2, err := testStore.GetAccount(suite.ctx, account1.ID)
 	require.Error(suite.T(), err)
 	require.EqualError(suite.T(), err, pgx.ErrNoRows.Error())
 	require.Empty(suite.T(), account2)
@@ -134,7 +131,7 @@ func (suite *AccountTestSuite) TestListAccounts() {
 		Offset: 5,
 	}
 
-	accounts, err := testQueries.ListAccounts(suite.ctx, &arg)
+	accounts, err := testStore.ListAccounts(suite.ctx, &arg)
 	require.NoError(suite.T(), err)
 	require.Len(suite.T(), accounts, 5)
 
@@ -144,7 +141,7 @@ func (suite *AccountTestSuite) TestListAccounts() {
 }
 
 func createTestAccount(t *testing.T, arg CreateAccountParams) *Account {
-	account, err := testQueries.CreateAccount(context.Background(), &arg)
+	account, err := testStore.CreateAccount(context.Background(), &arg)
 
 	require.NoError(t, err)
 	require.NotEmpty(t, account)

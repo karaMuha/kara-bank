@@ -32,7 +32,13 @@ func (a *AccountController) HandleCreateAccount(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	email := r.Context().Value(middlewares.ContextUserEmailKey).(string)
+	email, ok := r.Context().Value(middlewares.ContextUserEmailKey).(string)
+
+	if !ok {
+		http.Error(w, "Could not convert email from token to string", http.StatusInternalServerError)
+		return
+	}
+
 	requestBody.Owner = email
 	err = a.validator.Struct(requestBody)
 
