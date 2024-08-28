@@ -20,21 +20,52 @@ func TestTxTransferSuite(t *testing.T) {
 	})
 }
 
+func (suite *TxTransferTestSuite) AfterTest(suiteName string, testName string) {
+	_, err := testStore.ClearTransfersTable()
+	require.NoError(suite.T(), err)
+
+	_, err = testStore.ClearEntriesTable()
+	require.NoError(suite.T(), err)
+
+	_, err = testStore.ClearAccountsTable()
+	require.NoError(suite.T(), err)
+
+	_, err = testStore.ClearUsersTable()
+	require.NoError(suite.T(), err)
+}
+
 func (suite *TxTransferTestSuite) TestTransferTx() {
-	arg1 := CreateAccountParams{
-		Owner:    "Max",
+	registerUserParam1 := RegisterUserParams{
+		Email:          "Max@Mustermann.de",
+		HashedPassword: "",
+		FirstName:      "Max",
+		LastName:       "Mustermann",
+	}
+	user1 := registerTestUser(suite.T(), &registerUserParam1)
+
+	createAccountParam1 := CreateAccountParams{
+		Owner:    user1.Email,
 		Balance:  100,
 		Currency: "EUR",
 	}
 
-	account1 := createTestAccount(suite.T(), arg1)
+	registerUserParam2 := RegisterUserParams{
+		Email:          "Tom@Mustermann.de",
+		HashedPassword: "",
+		FirstName:      "Tom",
+		LastName:       "Mustermann",
+	}
+	user2 := registerTestUser(suite.T(), &registerUserParam2)
 
-	arg2 := CreateAccountParams{
-		Owner:    "Tom",
+	account1 := createTestAccount(suite.T(), createAccountParam1)
+
+	createAccountParam2 := CreateAccountParams{
+		Owner:    user2.Email,
 		Balance:  200,
 		Currency: "EUR",
 	}
-	account2 := createTestAccount(suite.T(), arg2)
+	account2 := createTestAccount(suite.T(), createAccountParam2)
+
 	fmt.Println(">> before:", account1.Balance, account2.Balance)
 
 	n := 5
@@ -138,20 +169,37 @@ func (suite *TxTransferTestSuite) TestTransferTx() {
 }
 
 func (suite *TxTransferTestSuite) TestTransferTxDeadlock() {
-	arg1 := CreateAccountParams{
-		Owner:    "Max",
+	registerUserParam1 := RegisterUserParams{
+		Email:          "Max@Mustermann.de",
+		HashedPassword: "",
+		FirstName:      "Max",
+		LastName:       "Mustermann",
+	}
+	user1 := registerTestUser(suite.T(), &registerUserParam1)
+
+	createAccountParam1 := CreateAccountParams{
+		Owner:    user1.Email,
 		Balance:  100,
 		Currency: "EUR",
 	}
 
-	account1 := createTestAccount(suite.T(), arg1)
+	registerUserParam2 := RegisterUserParams{
+		Email:          "Tom@Mustermann.de",
+		HashedPassword: "",
+		FirstName:      "Tom",
+		LastName:       "Mustermann",
+	}
+	user2 := registerTestUser(suite.T(), &registerUserParam2)
 
-	arg2 := CreateAccountParams{
-		Owner:    "Tom",
+	account1 := createTestAccount(suite.T(), createAccountParam1)
+
+	createAccountParam2 := CreateAccountParams{
+		Owner:    user2.Email,
 		Balance:  200,
 		Currency: "EUR",
 	}
-	account2 := createTestAccount(suite.T(), arg2)
+	account2 := createTestAccount(suite.T(), createAccountParam2)
+
 	fmt.Println(">> before:", account1.Balance, account2.Balance)
 
 	n := 10

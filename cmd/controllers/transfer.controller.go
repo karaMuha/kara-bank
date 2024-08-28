@@ -31,7 +31,13 @@ func (t *TransferController) HandleCreateTransfer(w http.ResponseWriter, r *http
 		return
 	}
 
-	email := r.Context().Value(middlewares.ContextUserEmailKey).(string)
+	email, ok := r.Context().Value(middlewares.ContextUserEmailKey).(string)
+
+	if !ok {
+		http.Error(w, "Could not extract email from token", http.StatusInternalServerError)
+		return
+	}
+
 	requestBody.FromUser = email
 	err = t.validator.Struct(requestBody)
 

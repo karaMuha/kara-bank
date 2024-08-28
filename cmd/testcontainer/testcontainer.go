@@ -2,7 +2,6 @@ package testcontainer
 
 import (
 	"context"
-	"path/filepath"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -11,10 +10,10 @@ import (
 	"github.com/testcontainers/testcontainers-go/wait"
 )
 
-func CreatePostgresContainer(ctx context.Context) (*pgxpool.Pool, error) {
+func CreatePostgresContainer(ctx context.Context, initScriptPath string) (*pgxpool.Pool, error) {
 	pgContainer, err := postgres.Run(ctx,
 		"postgres:16.3-alpine",
-		postgres.WithInitScripts(filepath.Join("..", "migration", "000001_init_schema.up.sql")),
+		postgres.WithInitScripts(initScriptPath),
 		postgres.WithDatabase("kara_bank_db"),
 		postgres.WithUsername("postgres"),
 		postgres.WithPassword("postgres"),
