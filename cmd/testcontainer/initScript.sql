@@ -63,3 +63,5 @@ CREATE TABLE "sessions" (
 );
 
 ALTER TABLE "sessions" ADD FOREIGN KEY ("email") REFERENCES "users" ("email");
+
+ALTER TABLE "users" ADD COLUMN "role" text NOT NULL DEFAULT 'customer';

@@ -11,7 +11,7 @@ import (
 
 const getUser = `-- name: GetUser :one
 SELECT
-  email, hashed_password, first_name, last_name, created_at
+  email, hashed_password, first_name, last_name, created_at, role
 FROM
   users
 WHERE
@@ -29,6 +29,7 @@ func (q *Queries) GetUser(ctx context.Context, email string) (*User, error) {
 		&i.FirstName,
 		&i.LastName,
 		&i.CreatedAt,
+		&i.Role,
 	)
 	return &i, err
 }
@@ -45,7 +46,7 @@ VALUES (
   $1, $2, $3, $4
 )
 RETURNING
-  email, hashed_password, first_name, last_name, created_at
+  email, hashed_password, first_name, last_name, created_at, role
 `
 
 type RegisterUserParams struct {
@@ -69,6 +70,7 @@ func (q *Queries) RegisterUser(ctx context.Context, arg *RegisterUserParams) (*U
 		&i.FirstName,
 		&i.LastName,
 		&i.CreatedAt,
+		&i.Role,
 	)
 	return &i, err
 }
