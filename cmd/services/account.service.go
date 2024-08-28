@@ -5,6 +5,7 @@ import (
 	"errors"
 	db "kara-bank/db/repositories"
 	"kara-bank/dto"
+	"kara-bank/utils"
 	"net/http"
 
 	"github.com/jackc/pgx/v5"
@@ -45,7 +46,7 @@ func (a *AccountServiceImpl) CreateAccount(ctx context.Context, args *dto.Create
 	return createdAccount, nil
 }
 
-func (a *AccountServiceImpl) GetAccount(ctx context.Context, id int64) (*db.Account, *dto.ResponseError) {
+func (a *AccountServiceImpl) GetAccount(ctx context.Context, id int64, email string, role string) (*db.Account, *dto.ResponseError) {
 	account, err := a.store.GetAccount(ctx, id)
 
 	if err != nil {
@@ -61,10 +62,17 @@ func (a *AccountServiceImpl) GetAccount(ctx context.Context, id int64) (*db.Acco
 		}
 	}
 
-	return account, nil
+	if account.Owner == email || role == utils.BankerRole || role == utils.AdminRole {
+		return account, nil
+	}
+
+	return nil, &dto.ResponseError{
+		Message: "You have no permission for this account",
+		Status:  http.StatusUnauthorized,
+	}
 }
 
-func (a AccountServiceImpl) ListAccounts(ctx context.Context, arg *dto.ListAccountsDto) ([]*db.Account, *dto.ResponseError) {
+func (a AccountServiceImpl) ListAccounts(ctx context.Context, arg *dto.ListAccountsDto, role string) ([]*db.Account, *dto.ResponseError) {
 	params := &db.ListAccountsParams{
 		Limit:  arg.Limit,
 		Offset: arg.Offset,

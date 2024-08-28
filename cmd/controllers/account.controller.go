@@ -75,7 +75,21 @@ func (a *AccountController) HandleGetAccount(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	account, respErr := a.accountService.GetAccount(r.Context(), int64(id))
+	email, ok := r.Context().Value(middlewares.ContextUserEmailKey).(string)
+
+	if !ok {
+		http.Error(w, "Could not convert email from token to string", http.StatusInternalServerError)
+		return
+	}
+
+	role, ok := r.Context().Value(middlewares.ContextUserRoleKey).(string)
+
+	if !ok {
+		http.Error(w, "Could not convert email from token to string", http.StatusInternalServerError)
+		return
+	}
+
+	account, respErr := a.accountService.GetAccount(r.Context(), int64(id), email, role)
 
 	if respErr != nil {
 		http.Error(w, respErr.Message, respErr.Status)
@@ -110,7 +124,14 @@ func (a *AccountController) HandleListAccounts(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	accounts, respErr := a.accountService.ListAccounts(r.Context(), &requestBody)
+	role, ok := r.Context().Value(middlewares.ContextUserRoleKey).(string)
+
+	if !ok {
+		http.Error(w, "Could not convert email from token to string", http.StatusInternalServerError)
+		return
+	}
+
+	accounts, respErr := a.accountService.ListAccounts(r.Context(), &requestBody, role)
 
 	if respErr != nil {
 		http.Error(w, respErr.Message, respErr.Status)
