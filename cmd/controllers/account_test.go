@@ -12,6 +12,7 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 
 	"github.com/go-playground/validator/v10"
@@ -93,6 +94,7 @@ func (suite *AccountControllerTestSuite) TestCreateAccountSuccess() {
 		FirstName: "Max",
 		LastName:  "Mustermann",
 	}, suite.router, suite.T())
+	require.NotNil(suite.T(), accessTokenCookie)
 
 	// create account with logged in user
 	createAccountParam := &dto.CreateAccountDto{
@@ -121,6 +123,7 @@ func (suite *AccountControllerTestSuite) TestGetOneAccountNotFound() {
 		FirstName: "Max",
 		LastName:  "Mustermann",
 	}, suite.router, suite.T())
+	require.NotNil(suite.T(), accessTokenCookie)
 
 	request := httptest.NewRequest("GET", "/accounts/123", nil)
 	request.AddCookie(accessTokenCookie)
@@ -139,6 +142,7 @@ func (suite *AccountControllerTestSuite) TestGetOneAccountSuccess() {
 		LastName:  "Mustermann",
 	}
 	accessTokenCookie := registerUserAndLogin(&registerUserParam, suite.router, suite.T())
+	require.NotNil(suite.T(), accessTokenCookie)
 
 	// create account with logged in user
 	createAccountParam := &dto.CreateAccountDto{
@@ -163,6 +167,16 @@ func (suite *AccountControllerTestSuite) TestGetOneAccountSuccess() {
 	require.NoError(suite.T(), err)
 	require.NotEmpty(suite.T(), createdAccount.ID)
 	require.Equal(suite.T(), registerUserParam.Email, createdAccount.Owner)
+
+	endpoint := "/accounts/" + strconv.Itoa(int(createdAccount.ID))
+
+	request = httptest.NewRequest("GET", endpoint, &body)
+	request.AddCookie(accessTokenCookie)
+	recorder = httptest.NewRecorder()
+
+	suite.router.ServeHTTP(recorder, request)
+
+	require.Equal(suite.T(), http.StatusOK, recorder.Result().StatusCode)
 }
 
 // helper function for test suits that need accounts

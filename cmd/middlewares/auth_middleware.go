@@ -3,19 +3,34 @@ package middlewares
 import (
 	"context"
 	"kara-bank/utils"
+	"log"
 	"net/http"
-	"strings"
 )
 
 type contextUserEmail string
+type contextUserRole string
 
 const ContextUserEmailKey contextUserEmail = "userEmail"
+const ContextUserRoleKey contextUserRole = "userRole"
 
 func AuthMiddleware(tokenMaker utils.TokenMaker, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		requestTarget := r.Method + " " + strings.Split(r.URL.Path, "/")[1]
+		log.Println(r.URL.Path)
+		requestTarget := r.Method + " " + r.URL.Path
 
-		if !utils.IsProtectedRoute(requestTarget) {
+		endpointRoles, err := utils.IsProtectedRoute(requestTarget)
+
+		if err != nil {
+			http.Error(w, "Could not find roles for this endpoint", http.StatusInternalServerError)
+			return
+		}
+
+		if endpointRoles == nil {
+			http.Error(w, "Could not find roles for this endpoint", http.StatusInternalServerError)
+			return
+		}
+
+		if endpointRoles[0] == "" {
 			next.ServeHTTP(w, r)
 			return
 		}
@@ -34,7 +49,15 @@ func AuthMiddleware(tokenMaker utils.TokenMaker, next http.Handler) http.Handler
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), ContextUserEmailKey, verifiedToken.Email)
-		next.ServeHTTP(w, r.WithContext(ctx))
+		for _, v := range endpointRoles {
+			if verifiedToken.Role == v {
+				ctx := context.WithValue(r.Context(), ContextUserEmailKey, verifiedToken.Email)
+				ctx = context.WithValue(ctx, ContextUserRoleKey, verifiedToken.Role)
+				next.ServeHTTP(w, r.WithContext(ctx))
+				return
+			}
+		}
+
+		http.Error(w, "You do not have the right role to do this", http.StatusUnauthorized)
 	})
 }
