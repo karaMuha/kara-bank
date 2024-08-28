@@ -41,6 +41,9 @@ func InitHttpServer(port string, connPool *pgxpool.Pool, tokenMaker utils.TokenM
 
 	router.HandleFunc("POST /transfers", transferController.HandleCreateTransfer)
 
+	// init protected routes
+	utils.SetProtectedRoutes()
+
 	return &http.Server{
 		Addr:    port,
 		Handler: middlewares.AuthMiddleware(tokenMaker, router),

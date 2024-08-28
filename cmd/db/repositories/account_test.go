@@ -24,44 +24,59 @@ func TestAccountSuite(t *testing.T) {
 
 func (suite *AccountTestSuite) AfterTest(suiteName string, testName string) {
 	// clear accounts table after every test to avoid dependencies and side effects between tests
-	query := `
-		DELETE FROM
-			accounts`
-	_, err := testQueries.db.Exec(suite.ctx, query)
+	_, err := testStore.ClearAccountsTable()
+	require.NoError(suite.T(), err)
 
+	_, err = testStore.ClearUsersTable()
 	require.NoError(suite.T(), err)
 }
 
 func (suite *AccountTestSuite) TestCreateAccount() {
-	arg := CreateAccountParams{
-		Owner:    "Max",
+	registerUserParam := &RegisterUserParams{
+		Email:          "Max@Mustermann.de",
+		HashedPassword: "",
+		FirstName:      "Max",
+		LastName:       "Mustermann",
+	}
+	user := registerTestUser(suite.T(), registerUserParam)
+
+	createAccountParam := CreateAccountParams{
+		Owner:    user.Email,
 		Balance:  100,
 		Currency: "EUR",
 	}
 
-	account, err := testQueries.CreateAccount(suite.ctx, &arg)
+	account, err := testStore.CreateAccount(suite.ctx, &createAccountParam)
 
 	require.NoError(suite.T(), err)
 	require.NotEmpty(suite.T(), account)
 
-	require.Equal(suite.T(), arg.Owner, account.Owner)
-	require.Equal(suite.T(), arg.Balance, account.Balance)
-	require.Equal(suite.T(), arg.Currency, account.Currency)
+	require.Equal(suite.T(), createAccountParam.Owner, account.Owner)
+	require.Equal(suite.T(), createAccountParam.Balance, account.Balance)
+	require.Equal(suite.T(), createAccountParam.Currency, account.Currency)
 
 	require.NotZero(suite.T(), account.ID)
 	require.NotZero(suite.T(), account.CreatedAt)
 }
 
 func (suite *AccountTestSuite) TestGetAccount() {
+	registerUserParam := &RegisterUserParams{
+		Email:          "Max@Mustermann.de",
+		HashedPassword: "",
+		FirstName:      "Max",
+		LastName:       "Mustermann",
+	}
+	user := registerTestUser(suite.T(), registerUserParam)
+
 	arg := CreateAccountParams{
-		Owner:    "Max",
+		Owner:    user.Email,
 		Balance:  100,
 		Currency: "EUR",
 	}
 
 	account1 := createTestAccount(suite.T(), arg)
 
-	account2, err := testQueries.GetAccount(suite.ctx, account1.ID)
+	account2, err := testStore.GetAccount(suite.ctx, account1.ID)
 
 	require.NoError(suite.T(), err)
 	require.NotEmpty(suite.T(), account2)
@@ -74,8 +89,16 @@ func (suite *AccountTestSuite) TestGetAccount() {
 }
 
 func (suite *AccountTestSuite) TestUpdateAccount() {
+	registerUserParam := &RegisterUserParams{
+		Email:          "Max@Mustermann.de",
+		HashedPassword: "",
+		FirstName:      "Max",
+		LastName:       "Mustermann",
+	}
+	user := registerTestUser(suite.T(), registerUserParam)
+
 	arg := CreateAccountParams{
-		Owner:    "Max",
+		Owner:    user.Email,
 		Balance:  100,
 		Currency: "EUR",
 	}
@@ -87,7 +110,7 @@ func (suite *AccountTestSuite) TestUpdateAccount() {
 		Balance: 200,
 	}
 
-	account2, err := testQueries.UpdateAccount(suite.ctx, &arg2)
+	account2, err := testStore.UpdateAccount(suite.ctx, &arg2)
 
 	require.NoError(suite.T(), err)
 	require.NotEmpty(suite.T(), account2)
@@ -100,18 +123,26 @@ func (suite *AccountTestSuite) TestUpdateAccount() {
 }
 
 func (suite *AccountTestSuite) TestDeleteAccount() {
+	registerUserParam := &RegisterUserParams{
+		Email:          "Max@Mustermann.de",
+		HashedPassword: "",
+		FirstName:      "Max",
+		LastName:       "Mustermann",
+	}
+	user := registerTestUser(suite.T(), registerUserParam)
+
 	arg := CreateAccountParams{
-		Owner:    "Max",
+		Owner:    user.Email,
 		Balance:  100,
 		Currency: "EUR",
 	}
 
 	account1 := createTestAccount(suite.T(), arg)
 
-	err := testQueries.DeleteAccount(suite.ctx, account1.ID)
+	err := testStore.DeleteAccount(suite.ctx, account1.ID)
 	require.NoError(suite.T(), err)
 
-	account2, err := testQueries.GetAccount(suite.ctx, account1.ID)
+	account2, err := testStore.GetAccount(suite.ctx, account1.ID)
 	require.Error(suite.T(), err)
 	require.EqualError(suite.T(), err, pgx.ErrNoRows.Error())
 	require.Empty(suite.T(), account2)
@@ -119,9 +150,17 @@ func (suite *AccountTestSuite) TestDeleteAccount() {
 
 func (suite *AccountTestSuite) TestListAccounts() {
 	for i := 0; i < 10; i++ {
-		name := "Max" + strconv.Itoa(i)
+		email := "Max" + strconv.Itoa(i) + "@Mustermann.de"
+		registerUserParam := &RegisterUserParams{
+			Email:          email,
+			HashedPassword: "",
+			FirstName:      "Max",
+			LastName:       "Mustermann",
+		}
+		user := registerTestUser(suite.T(), registerUserParam)
+
 		arg := CreateAccountParams{
-			Owner:    name,
+			Owner:    user.Email,
 			Balance:  100,
 			Currency: "EUR",
 		}
@@ -134,7 +173,7 @@ func (suite *AccountTestSuite) TestListAccounts() {
 		Offset: 5,
 	}
 
-	accounts, err := testQueries.ListAccounts(suite.ctx, &arg)
+	accounts, err := testStore.ListAccounts(suite.ctx, &arg)
 	require.NoError(suite.T(), err)
 	require.Len(suite.T(), accounts, 5)
 
@@ -144,7 +183,7 @@ func (suite *AccountTestSuite) TestListAccounts() {
 }
 
 func createTestAccount(t *testing.T, arg CreateAccountParams) *Account {
-	account, err := testQueries.CreateAccount(context.Background(), &arg)
+	account, err := testStore.CreateAccount(context.Background(), &arg)
 
 	require.NoError(t, err)
 	require.NotEmpty(t, account)

@@ -64,7 +64,7 @@ func (t *TransferServiceImpl) validAccounts(ctx context.Context, fromUser string
 
 	if fromAccount.Owner != fromUser {
 		return &dto.ResponseError{
-			Message: "You cannot send money from accoutns other than yours",
+			Message: "You cannot send money from accounts other than yours",
 			Status:  http.StatusUnauthorized,
 		}
 	}

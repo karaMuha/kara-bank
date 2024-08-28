@@ -20,7 +20,7 @@ func NewPasetoMaker(symmetricKey string) *PasetoMaker {
 	}
 }
 
-func (p *PasetoMaker) CreateToken(email string, duration time.Duration) (string, *TokenPayload, error) {
+func (p *PasetoMaker) CreateToken(email string, role string, duration time.Duration) (string, *TokenPayload, error) {
 	token := paseto.NewToken()
 	tokenId, err := uuid.NewRandom()
 
@@ -30,6 +30,7 @@ func (p *PasetoMaker) CreateToken(email string, duration time.Duration) (string,
 
 	token.Set("id", tokenId.String())
 	token.Set("email", email)
+	token.Set("role", role)
 	token.SetIssuedAt(time.Now())
 	token.SetExpiration(time.Now().Add(duration))
 
@@ -65,25 +66,26 @@ func (p *PasetoMaker) VerifyToken(token string) (*TokenPayload, error) {
 
 func getPayloadFromToken(token *paseto.Token) (*TokenPayload, error) {
 	id, err := token.GetString("id")
-
 	if err != nil {
 		return nil, ErrInvalidToken
 	}
 
 	email, err := token.GetString("email")
+	if err != nil {
+		return nil, ErrInvalidToken
+	}
 
+	role, err := token.GetString("role")
 	if err != nil {
 		return nil, ErrInvalidToken
 	}
 
 	issuedAt, err := token.GetIssuedAt()
-
 	if err != nil {
 		return nil, ErrInvalidToken
 	}
 
 	expiredAt, err := token.GetExpiration()
-
 	if err != nil {
 		return nil, ErrInvalidToken
 	}
@@ -91,6 +93,7 @@ func getPayloadFromToken(token *paseto.Token) (*TokenPayload, error) {
 	return &TokenPayload{
 		ID:        uuid.MustParse(id),
 		Email:     email,
+		Role:      role,
 		IssuedAt:  issuedAt,
 		ExpiredAt: expiredAt,
 	}, nil
