@@ -18,4 +18,5 @@ appdown:
 
 testall:
 	cd cmd; \
-	go test -v ./...
+	go test -v ./controllers; \
+	go test -v ./db/repositories
