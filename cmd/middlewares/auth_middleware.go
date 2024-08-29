@@ -3,7 +3,6 @@ package middlewares
 import (
 	"context"
 	"kara-bank/utils"
-	"log"
 	"net/http"
 )
 
@@ -15,7 +14,6 @@ const ContextUserRoleKey contextUserRole = "userRole"
 
 func AuthMiddleware(tokenMaker utils.TokenMaker, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Println(r.URL.Path)
 		requestTarget := r.Method + " " + r.URL.Path
 
 		endpointRoles, err := utils.IsProtectedRoute(requestTarget)

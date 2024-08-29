@@ -11,7 +11,7 @@ import (
 
 const getUser = `-- name: GetUser :one
 SELECT
-  email, hashed_password, first_name, last_name, created_at, role
+  email, hashed_password, first_name, last_name, created_at, user_role
 FROM
   users
 WHERE
@@ -29,7 +29,7 @@ func (q *Queries) GetUser(ctx context.Context, email string) (*User, error) {
 		&i.FirstName,
 		&i.LastName,
 		&i.CreatedAt,
-		&i.Role,
+		&i.UserRole,
 	)
 	return &i, err
 }
@@ -40,13 +40,14 @@ INSERT INTO
     email,
     hashed_password,
     first_name,
-    last_name
+    last_name,
+    user_role
   )
 VALUES (
-  $1, $2, $3, $4
+  $1, $2, $3, $4, $5
 )
 RETURNING
-  email, hashed_password, first_name, last_name, created_at, role
+  email, hashed_password, first_name, last_name, created_at, user_role
 `
 
 type RegisterUserParams struct {
@@ -54,6 +55,7 @@ type RegisterUserParams struct {
 	HashedPassword string `json:"hashed_password"`
 	FirstName      string `json:"first_name"`
 	LastName       string `json:"last_name"`
+	UserRole       string `json:"user_role"`
 }
 
 func (q *Queries) RegisterUser(ctx context.Context, arg *RegisterUserParams) (*User, error) {
@@ -62,6 +64,7 @@ func (q *Queries) RegisterUser(ctx context.Context, arg *RegisterUserParams) (*U
 		arg.HashedPassword,
 		arg.FirstName,
 		arg.LastName,
+		arg.UserRole,
 	)
 	var i User
 	err := row.Scan(
@@ -70,7 +73,7 @@ func (q *Queries) RegisterUser(ctx context.Context, arg *RegisterUserParams) (*U
 		&i.FirstName,
 		&i.LastName,
 		&i.CreatedAt,
-		&i.Role,
+		&i.UserRole,
 	)
 	return &i, err
 }

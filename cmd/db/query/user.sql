@@ -4,10 +4,11 @@ INSERT INTO
     email,
     hashed_password,
     first_name,
-    last_name
+    last_name,
+    user_role
   )
 VALUES (
-  $1, $2, $3, $4
+  $1, $2, $3, $4, $5
 )
 RETURNING
   *;
