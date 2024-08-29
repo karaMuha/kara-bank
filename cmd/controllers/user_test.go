@@ -321,3 +321,31 @@ func getCookie(cookies []*http.Cookie) *http.Cookie {
 
 	return nil
 }
+
+func loginUser(arg *dto.LoginUserDto, router http.Handler, t *testing.T) *http.Cookie {
+	// login with registered user
+	loginRequestParam := &dto.LoginUserDto{
+		Email:    arg.Email,
+		Password: arg.Password,
+	}
+
+	loginRequestParamBytes, err := json.Marshal(loginRequestParam)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	requestBody := bytes.NewReader(loginRequestParamBytes)
+	request := httptest.NewRequest("POST", "/users/login", requestBody)
+	request.RemoteAddr = "test"
+	request.Header.Set("User-Agent", "test")
+	recorder := httptest.NewRecorder()
+
+	router.ServeHTTP(recorder, request)
+
+	require.Equal(t, 200, recorder.Result().StatusCode)
+
+	accessTokenCookie := getCookie(recorder.Result().Cookies())
+	require.NotNil(t, accessTokenCookie)
+
+	return accessTokenCookie
+}

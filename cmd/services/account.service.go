@@ -73,6 +73,13 @@ func (a *AccountServiceImpl) GetAccount(ctx context.Context, id int64, email str
 }
 
 func (a AccountServiceImpl) ListAccounts(ctx context.Context, arg *dto.ListAccountsDto, role string) ([]*db.Account, *dto.ResponseError) {
+	if role != utils.AdminRole && role != utils.BankerRole {
+		return nil, &dto.ResponseError{
+			Message: "You have no permission for this action",
+			Status:  http.StatusUnauthorized,
+		}
+	}
+
 	params := &db.ListAccountsParams{
 		Limit:  arg.Limit,
 		Offset: arg.Offset,
