@@ -10,10 +10,10 @@ func SetProtectedRoutes() {
 	protectedRoutes = make(map[string][]string)
 	protectedRoutes["POST /users/register"] = []string{""}
 	protectedRoutes["POST /users/login"] = []string{""}
-	protectedRoutes["POST /accounts"] = []string{"customer", "banker", "admin"}
+	protectedRoutes["POST /accounts"] = []string{"customer"}
 	protectedRoutes["GET /accounts/*"] = []string{"customer", "banker", "admin"}
 	protectedRoutes["GET /accounts"] = []string{"banker", "admin"}
-	protectedRoutes["POST /transfers"] = []string{"customer", "admin"}
+	protectedRoutes["POST /transfers"] = []string{"customer"}
 }
 
 func IsProtectedRoute(endpoint string) ([]string, error) {

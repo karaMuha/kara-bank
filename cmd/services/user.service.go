@@ -40,6 +40,7 @@ func (u *UserServiceImpl) RegisterUser(ctx context.Context, arg *dto.RegisterUse
 		HashedPassword: string(hashedPassword),
 		FirstName:      arg.FirstName,
 		LastName:       arg.LastName,
+		UserRole:       utils.CustomerRole,
 	}
 
 	user, err := u.store.RegisterUser(ctx, params)
@@ -91,7 +92,7 @@ func (u *UserServiceImpl) LoginUser(ctx context.Context, arg *dto.LoginUserDto) 
 		}
 	}
 
-	accessToken, _, err := u.tokenMaker.CreateToken(user.Email, user.Role, 30*time.Minute)
+	accessToken, _, err := u.tokenMaker.CreateToken(user.Email, user.UserRole, 30*time.Minute)
 
 	if err != nil {
 		return "", &dto.ResponseError{
@@ -100,7 +101,7 @@ func (u *UserServiceImpl) LoginUser(ctx context.Context, arg *dto.LoginUserDto) 
 		}
 	}
 
-	refreshToken, refreshTokenPayload, err := u.tokenMaker.CreateToken(user.Email, user.Role, 168*time.Hour) // valid for a week
+	refreshToken, refreshTokenPayload, err := u.tokenMaker.CreateToken(user.Email, user.UserRole, 168*time.Hour) // valid for a week
 
 	if err != nil {
 		return "", &dto.ResponseError{

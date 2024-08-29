@@ -18,6 +18,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type AccountControllerTestSuite struct {
@@ -175,7 +176,80 @@ func (suite *AccountControllerTestSuite) TestGetOneAccountSuccess() {
 	recorder = httptest.NewRecorder()
 
 	suite.router.ServeHTTP(recorder, request)
+	require.Equal(suite.T(), http.StatusOK, recorder.Result().StatusCode)
+}
 
+func (suite *AccountControllerTestSuite) TestListAccountsFailWrongRole() {
+	hashedPasswordBytes, err := bcrypt.GenerateFromPassword([]byte("Test1234"), bcrypt.DefaultCost)
+	require.NoError(suite.T(), err)
+
+	registerUserParam := &db.RegisterUserParams{
+		Email:          "Max@Mustermann.de",
+		HashedPassword: string(hashedPasswordBytes),
+		FirstName:      "Max",
+		LastName:       "Mustermann",
+		UserRole:       utils.CustomerRole,
+	}
+
+	user, err := testStore.RegisterUser(suite.ctx, registerUserParam)
+	require.NoError(suite.T(), err)
+
+	loginUserDto := &dto.LoginUserDto{
+		Email:    user.Email,
+		Password: "Test1234",
+	}
+	accessToken := loginUser(loginUserDto, suite.router, suite.T())
+
+	listAccountsDto := &dto.ListAccountsDto{
+		Offset: 0,
+		Limit:  5,
+	}
+	var body bytes.Buffer
+	err = json.NewEncoder(&body).Encode(listAccountsDto)
+	require.NoError(suite.T(), err)
+
+	request := httptest.NewRequest("GET", "/accounts", &body)
+	request.AddCookie(accessToken)
+	recorder := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(recorder, request)
+	require.Equal(suite.T(), http.StatusUnauthorized, recorder.Result().StatusCode)
+}
+
+func (suite *AccountControllerTestSuite) TestListAccountsSuccess() {
+	hashedPasswordBytes, err := bcrypt.GenerateFromPassword([]byte("Test1234"), bcrypt.DefaultCost)
+	require.NoError(suite.T(), err)
+
+	registerUserParam := &db.RegisterUserParams{
+		Email:          "Max@Mustermann.de",
+		HashedPassword: string(hashedPasswordBytes),
+		FirstName:      "Max",
+		LastName:       "Mustermann",
+		UserRole:       utils.AdminRole,
+	}
+
+	user, err := testStore.RegisterUser(suite.ctx, registerUserParam)
+	require.NoError(suite.T(), err)
+
+	loginUserDto := &dto.LoginUserDto{
+		Email:    user.Email,
+		Password: "Test1234",
+	}
+	accessToken := loginUser(loginUserDto, suite.router, suite.T())
+
+	listAccountsDto := &dto.ListAccountsDto{
+		Offset: 0,
+		Limit:  5,
+	}
+	var body bytes.Buffer
+	err = json.NewEncoder(&body).Encode(listAccountsDto)
+	require.NoError(suite.T(), err)
+
+	request := httptest.NewRequest("GET", "/accounts", &body)
+	request.AddCookie(accessToken)
+	recorder := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(recorder, request)
 	require.Equal(suite.T(), http.StatusOK, recorder.Result().StatusCode)
 }
 
