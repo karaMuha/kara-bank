@@ -28,3 +28,4 @@ services:
       POSTGRES_DB: "kara_bank_db"
     volumes:
       - ./db-data/postgres/:/var/lib/postgresql/data
+      - ./db-script/init.sql:/docker-entrypoint-initdb.d/public_schema.sql

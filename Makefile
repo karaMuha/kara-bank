@@ -1,5 +1,12 @@
-appup:
+init:
+	mkdir db-data; \
+	mkdir db-data/postgres
+
+start:
 	docker-compose up -d
+
+stop:
+	docker-compose down
 
 migrateup:
 	migrate -path cmd/db/migration -database "postgresql://postgres:postgres@localhost:5433/kara_bank_db?sslmode=disable" -verbose up
@@ -12,9 +19,6 @@ migratedown1:
 
 new_migration:
 	migrate create -ext sql -dir ./cmd/db/migration -seq ${name}
-
-appdown:
-	docker-compose down
 
 testall:
 	cd cmd; \
