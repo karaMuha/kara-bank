@@ -114,7 +114,6 @@ func (suite *TransferControllerTestSuite) TestCreateTransferSuccess() {
 
 	// transfer money from account 1 to account 2
 	transferParam := &dto.CreateTransferDto{
-		FromUser:      account1.Owner,
 		FromAccountId: account1.ID,
 		ToAccountId:   account2.ID,
 		Amount:        100,
@@ -170,7 +169,6 @@ func (suite *TransferControllerTestSuite) TestCreateTransferFailAccountAndOwnerN
 
 	// transfer money from account 1 to account 2 but with accessToken from user 2
 	transferParam := &dto.CreateTransferDto{
-		FromUser:      account1.Owner,
 		FromAccountId: account1.ID,
 		ToAccountId:   account2.ID,
 		Amount:        100,
