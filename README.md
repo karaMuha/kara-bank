@@ -13,7 +13,7 @@ Welcome to KaraBank, your bank of trust ;)
 - the http server will listen on port 8080 and postgres on port 5433
 
 ## Usage
-- POST /users/register -> register as a customer of our trustworthy bank
+- POST /users/register -> Register as a customer of our trustworthy bank.
 ```
 {
     "email": "test@test.com",
@@ -22,28 +22,28 @@ Welcome to KaraBank, your bank of trust ;)
     "last_name": "Mustermann"
 }
 ```
-- POST /users/login -> login with your credentials
+- POST /users/login -> Login with your credentials.
 ```
 {
     "email": "test@test.com",
     "password": "test1234"
 }
 ```
-- POST /accounts -> create a bank account in order to become rich
+- POST /accounts -> Create a bank account in order to become rich. Need to be logged in to do so.
 ```
 {
     "currency": "EUR"
 }
 ```
-- GET /accounts/{id} ->
-- GET /accounts ->
+- GET /accounts/{id} -> Get account with provided id. Admin and Banker role can get any account. Customer role can only get his own accoutns.
+- GET /accounts -> Admin and Banker role can list accounts.
 ```
 {
     "limit": {any number >= 1},
     "offset": {any number >= 0}
 }
 ```
-- POST /transfers ->
+- POST /transfers -> Transfer money from one account to another. Need to be logged in and you can only send money from your own account.
 ```
 {
     "from_account_id": {id of a created account},
