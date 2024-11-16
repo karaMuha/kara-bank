@@ -2,10 +2,14 @@ package main
 
 import (
 	"context"
+	"kara-bank/pb"
 	"kara-bank/server"
 	"kara-bank/utils"
 	"log"
 	"os"
+
+	"github.com/jackc/pgx/v5/pgxpool"
+	"google.golang.org/grpc"
 )
 
 func main() {
@@ -19,8 +23,20 @@ func main() {
 	connPool := server.ConnectToDb(context.Background())
 	log.Println("Connected to databse")
 
-	log.Println("Initializing http server")
-	httpServer := server.InitHttpServer(port, connPool, pasetoMaker)
+	runRestServer(port, connPool, pasetoMaker)
+}
+
+func runGrpcServer(connPool *pgxpool.Pool, tokenMaker utils.TokenMaker) {
+	log.Println("Initializing grpc server")
+	handler := server.InitGrpcHandler(connPool, tokenMaker)
+
+	grpc := grpc.NewServer()
+	pb.RegisterKaraBankServer(grpc, handler)
+}
+
+func runRestServer(port string, connPool *pgxpool.Pool, tokenMaker utils.TokenMaker) {
+	log.Println("Initializing rest server")
+	httpServer := server.InitHttpServer(port, connPool, tokenMaker)
 
 	log.Printf("Starting app on port %s", port)
 	err := httpServer.ListenAndServe()

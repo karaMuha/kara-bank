@@ -1,9 +1,28 @@
 package server
 
-import "google.golang.org/grpc"
+import (
+	db "kara-bank/db/repositories"
+	"kara-bank/pb"
+	"kara-bank/services"
+	"kara-bank/utils"
 
-func InitGrpcServer() *grpc.Server {
-	server := grpc.NewServer()
+	"github.com/jackc/pgx/v5/pgxpool"
+)
 
-	return server
+type GrpcServer struct {
+	pb.UnimplementedKaraBankServer
+	db         *pgxpool.Pool
+	tokenMaker utils.TokenMaker
+}
+
+func InitGrpcHandler(connPool *pgxpool.Pool, tokenMaker utils.TokenMaker) *GrpcServer {
+	// init repository layer
+	store := db.NewStore(connPool)
+
+	// init service layer
+	userService := services.NewUserService(store, tokenMaker)
+	accountService := services.NewAccountService(store)
+	transferService := services.NewTransferService(store)
+
+	return &GrpcServer{}
 }

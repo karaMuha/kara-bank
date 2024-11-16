@@ -1,9 +1,9 @@
 package server
 
 import (
-	"kara-bank/controllers"
 	db "kara-bank/db/repositories"
 	"kara-bank/middlewares"
+	rest "kara-bank/rest_handler"
 	"kara-bank/services"
 	"kara-bank/utils"
 	"net/http"
@@ -25,9 +25,9 @@ func InitHttpServer(port string, connPool *pgxpool.Pool, tokenMaker utils.TokenM
 	transferService := services.NewTransferService(store)
 
 	// init controller layer
-	userController := controllers.NewUserController(userService, validator)
-	accountController := controllers.NewAccountController(accountService, validator)
-	transferController := controllers.NewTransferController(transferService, validator)
+	userController := rest.NewUserController(userService, validator)
+	accountController := rest.NewAccountController(accountService, validator)
+	transferController := rest.NewTransferController(transferService, validator)
 
 	// setup router
 	router := http.NewServeMux()
