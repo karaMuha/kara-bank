@@ -1,7 +1,6 @@
 package server
 
 import (
-	db "kara-bank/db/repositories"
 	"kara-bank/middlewares"
 	rest "kara-bank/rest_handler"
 	"kara-bank/services"
@@ -9,20 +8,17 @@ import (
 	"net/http"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func InitHttpServer(port string, connPool *pgxpool.Pool, tokenMaker utils.TokenMaker) *http.Server {
+func InitHttpServer(
+	port string,
+	userService services.UserServiceInterface,
+	accountService services.AccountServiceInterface,
+	transferService services.TransferServiceInterface,
+	tokenMaker utils.TokenMaker,
+) *http.Server {
 	// init validator
 	validator := validator.New(validator.WithRequiredStructEnabled())
-
-	// init repository layer
-	store := db.NewStore(connPool)
-
-	// init service layer
-	userService := services.NewUserService(store, tokenMaker)
-	accountService := services.NewAccountService(store)
-	transferService := services.NewTransferService(store)
 
 	// init controller layer
 	userController := rest.NewUserController(userService, validator)

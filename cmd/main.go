@@ -2,14 +2,17 @@ package main
 
 import (
 	"context"
+	dbserver "kara-bank/db"
+	db "kara-bank/db/repositories"
+	gapi "kara-bank/grpc_handler"
 	"kara-bank/pb"
 	"kara-bank/server"
+	"kara-bank/services"
 	"kara-bank/utils"
 	"log"
 	"net"
 	"os"
 
-	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
@@ -23,16 +26,29 @@ func main() {
 	pasetoMaker := utils.NewPasetoMaker("") // TODO: get key for token generation
 
 	log.Println("Connecting to database")
-	connPool := server.ConnectToDb(context.Background())
+	connPool := dbserver.ConnectToDb(context.Background())
 	log.Println("Connected to databse")
 
-	// runRestServer(restPort, connPool, pasetoMaker)
-	runGrpcServer(grpcPort, connPool, pasetoMaker)
+	// init repository layer
+	store := db.NewStore(connPool)
+
+	// init service layer
+	userService := services.NewUserService(store, pasetoMaker)
+	accountService := services.NewAccountService(store)
+	transferService := services.NewTransferService(store)
+
+	//runRestServer(restPort, userService, accountService, transferService, pasetoMaker)
+	runGrpcServer(grpcPort, userService, accountService, transferService)
 }
 
-func runGrpcServer(grpcPort string, connPool *pgxpool.Pool, tokenMaker utils.TokenMaker) {
+func runGrpcServer(
+	grpcPort string,
+	userService services.UserServiceInterface,
+	accountService services.AccountServiceInterface,
+	transferService services.TransferServiceInterface,
+) {
 	log.Println("Initializing grpc server")
-	handler := server.InitGrpcHandler(connPool, tokenMaker)
+	handler := gapi.InitGrpcHandler(userService, accountService, transferService)
 
 	server := grpc.NewServer()
 	pb.RegisterKaraBankServer(server, handler)
@@ -51,9 +67,15 @@ func runGrpcServer(grpcPort string, connPool *pgxpool.Pool, tokenMaker utils.Tok
 
 }
 
-func runRestServer(port string, connPool *pgxpool.Pool, tokenMaker utils.TokenMaker) {
+func runRestServer(
+	port string,
+	userService services.UserServiceInterface,
+	accountService services.AccountServiceInterface,
+	transferService services.TransferServiceInterface,
+	tokenMaker utils.TokenMaker,
+) {
 	log.Println("Initializing rest server")
-	httpServer := server.InitHttpServer(port, connPool, tokenMaker)
+	httpServer := server.InitHttpServer(port, userService, accountService, transferService, tokenMaker)
 
 	log.Printf("Starting app on port %s", port)
 	err := httpServer.ListenAndServe()
