@@ -123,7 +123,7 @@ func RegisterKaraBankHandlerServer(ctx context.Context, mux *runtime.ServeMux, s
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/pb.KaraBank/LoginUser", runtime.WithHTTPPathPattern("/v1/login"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/pb.KaraBank/LoginUser", runtime.WithHTTPPathPattern("/v1/users/login"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -209,7 +209,7 @@ func RegisterKaraBankHandlerClient(ctx context.Context, mux *runtime.ServeMux, c
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/pb.KaraBank/LoginUser", runtime.WithHTTPPathPattern("/v1/login"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/pb.KaraBank/LoginUser", runtime.WithHTTPPathPattern("/v1/users/login"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -231,7 +231,7 @@ func RegisterKaraBankHandlerClient(ctx context.Context, mux *runtime.ServeMux, c
 var (
 	pattern_KaraBank_RegisterUser_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "users"}, ""))
 
-	pattern_KaraBank_LoginUser_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "login"}, ""))
+	pattern_KaraBank_LoginUser_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "users", "login"}, ""))
 )
 
 var (

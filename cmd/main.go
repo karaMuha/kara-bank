@@ -17,6 +17,7 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
 func main() {
@@ -78,7 +79,17 @@ func runGatewayServer(
 ) {
 	log.Println("Initializing grpc gateway")
 	handler := gapi.InitGrpcHandler(userService, accountService, transferService)
-	grpcMux := runtime.NewServeMux()
+
+	jsonOption := runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
+		MarshalOptions: protojson.MarshalOptions{
+			UseProtoNames: true,
+		},
+		UnmarshalOptions: protojson.UnmarshalOptions{
+			DiscardUnknown: true,
+		},
+	})
+
+	grpcMux := runtime.NewServeMux(jsonOption)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
