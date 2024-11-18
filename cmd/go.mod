@@ -5,8 +5,10 @@ go 1.23.3
 require (
 	aidanwoods.dev/go-paseto v1.5.2
 	github.com/go-playground/validator/v10 v10.22.0
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.16.0
 	github.com/testcontainers/testcontainers-go v0.32.0
 	github.com/vodkaslime/wildcard v0.0.0-20220926070406-71dac9214330
+	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.5.1
 )
 
 require (
@@ -14,8 +16,11 @@ require (
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
+	github.com/golang/glog v1.2.2 // indirect
+	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
 	golang.org/x/net v0.29.0 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20240903143218-8af14fe29dc1 // indirect
 )
 
 require (

@@ -2,6 +2,14 @@ init:
 	mkdir db-data; \
 	mkdir db-data/postgres
 
+buf-update:
+	cd cmd; \
+	buf dep update
+
+generate-pb:
+	cd cmd; \
+	buf generate
+
 start:
 	docker-compose up -d
 

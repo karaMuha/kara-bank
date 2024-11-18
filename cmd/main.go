@@ -11,15 +11,17 @@ import (
 	"kara-bank/utils"
 	"log"
 	"net"
+	"net/http"
 	"os"
 
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
 
 func main() {
 	log.Println("Starting kara-bank")
-	//restPort := os.Getenv("SERVER_PORT")
+	restPort := os.Getenv("REST_SERVER_PORT")
 	grpcPort := os.Getenv("GRPC_SERVER_PORT")
 
 	log.Println("Initializing token maker")
@@ -38,6 +40,7 @@ func main() {
 	transferService := services.NewTransferService(store)
 
 	//runRestServer(restPort, userService, accountService, transferService, pasetoMaker)
+	go runGatewayServer(restPort, userService, accountService, transferService)
 	runGrpcServer(grpcPort, userService, accountService, transferService)
 }
 
@@ -53,18 +56,50 @@ func runGrpcServer(
 	server := grpc.NewServer()
 	pb.RegisterKaraBankServer(server, handler)
 	reflection.Register(server)
-	port := "0.0.0.0" + grpcPort
+	address := "0.0.0.0" + grpcPort
 
-	listener, err := net.Listen("tcp", port)
+	listener, err := net.Listen("tcp", address)
 	if err != nil {
-		log.Fatal("cannot create listener")
+		log.Fatal("cannot create listener: ", err)
 	}
 
 	err = server.Serve(listener)
 	if err != nil {
-		log.Fatal("cannot start grpc server")
+		log.Fatal("cannot start grpc server: ", err)
 	}
 
+}
+
+func runGatewayServer(
+	port string,
+	userService services.UserServiceInterface,
+	accountService services.AccountServiceInterface,
+	transferService services.TransferServiceInterface,
+) {
+	log.Println("Initializing grpc gateway")
+	handler := gapi.InitGrpcHandler(userService, accountService, transferService)
+	grpcMux := runtime.NewServeMux()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	err := pb.RegisterKaraBankHandlerServer(ctx, grpcMux, handler)
+	if err != nil {
+		log.Fatal("cannot register handler server: ", err)
+	}
+
+	mux := http.NewServeMux()
+	mux.Handle("/", grpcMux)
+
+	address := "0.0.0.0" + port
+	listener, err := net.Listen("tcp", address)
+	if err != nil {
+		log.Fatal("cannot create listener: ", err)
+	}
+
+	err = http.Serve(listener, mux)
+	if err != nil {
+		log.Fatal("cannot start gateway server: ", err)
+	}
 }
 
 func runRestServer(
