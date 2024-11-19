@@ -13,7 +13,7 @@ Welcome to KaraBank, your bank of trust ;)
 - the http server will listen on port 8080 and postgres on port 5433
 
 ## Usage
-- POST /users/register -> Register as a customer of our trustworthy bank.
+- POST /v1/users -> Register as a customer of our trustworthy bank.
 ```
 {
     "email": "test@test.com",
@@ -22,7 +22,7 @@ Welcome to KaraBank, your bank of trust ;)
     "last_name": "Mustermann"
 }
 ```
-- POST /users/login -> Login with your credentials.
+- POST /v1/users/login -> Login with your credentials.
 ```
 {
     "email": "test@test.com",
@@ -53,7 +53,7 @@ Welcome to KaraBank, your bank of trust ;)
 ```
 
 ## ToDos
-- implement money deposit feature
-- implement money withdraw feature
-- implement individual lower limit for bank account feature
+- refactor to domain centric design (hexagonal & clean architecture)
+- implement money deposit and withdraw
+- implement individual lower limit for bank account
 - implement currency conversion for transactions between accounts with different currencies
