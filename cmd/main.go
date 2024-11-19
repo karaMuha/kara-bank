@@ -40,8 +40,8 @@ func main() {
 	accountService := services.NewAccountService(store)
 	transferService := services.NewTransferService(store)
 
-	//runRestServer(restPort, userService, accountService, transferService, pasetoMaker)
-	go runGatewayServer(restPort, userService, accountService, transferService)
+	go runRestServer(restPort, userService, accountService, transferService, pasetoMaker)
+	// go runGatewayServer(restPort, userService, accountService, transferService)
 	runGrpcServer(grpcPort, userService, accountService, transferService)
 }
 

@@ -53,7 +53,7 @@ Welcome to KaraBank, your bank of trust ;)
 ```
 
 ## ToDos
-- implement money deposit feature
-- implement money withdraw feature
-- implement individual lower limit for bank account feature
+- refactor to domain centric design (hexagonal & clean architecture)
+- implement money deposit and withdraw
+- implement individual lower limit for bank account
 - implement currency conversion for transactions between accounts with different currencies
