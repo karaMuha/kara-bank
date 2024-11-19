@@ -1,9 +1,0 @@
-{
-  "makefile.configureOnOpen": false,
-  "protoc": {
-    
-        "options": [
-            "--proto_path=proto",
-        ]
-    }
-}
