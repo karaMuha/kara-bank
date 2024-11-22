@@ -53,7 +53,8 @@ Welcome to KaraBank, your bank of trust ;)
 ```
 
 ## ToDos
-- refactor to domain centric design (hexagonal & clean architecture)
+- refactor to domain centric design (hexagonal/clean architecture)
+- API versioning
 - implement remaining grpc endpoints
 - implement money deposit and withdraw
 - implement individual lower limit for bank account
